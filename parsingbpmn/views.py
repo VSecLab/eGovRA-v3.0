@@ -17,7 +17,7 @@ from .forms import ProcessForm, SystemForm
 from .models import Process, Asset, System, Asset_has_attribute, Attribute, Asset_type, Attribute_value, \
     Threat_has_attribute, Threat_has_control, ThreatAgentRiskScores, TACategoryAttribute, ThreatAgentCategory, \
     System_ThreatAgent, TAReplies_Question, TAReplyCategory, Reply, ThreatAgentQuestion, StrideImpactRecord, Stride, \
-    Threat_Stride, Risk, OverallRisk, DataObject,Actor
+    Threat_Stride, Risk, OverallRisk,Actor
 from .Utils.Const import x_padding,y_padding
 from .bpmn_python_master.bpmn_python import bpmn_diagram_rep as diagram
 

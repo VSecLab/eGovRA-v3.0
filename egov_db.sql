@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Mar 07, 2022 alle 16:27
+-- Creato il: Mar 31, 2022 alle 16:43
 -- Versione del server: 10.4.14-MariaDB
 -- Versione PHP: 7.2.34
 
@@ -185,7 +185,15 @@ INSERT INTO `auth_permission` (`id`, `name`, `content_type_id`, `codename`) VALU
 (121, 'Can add overall risk', 31, 'add_overallrisk'),
 (122, 'Can change overall risk', 31, 'change_overallrisk'),
 (123, 'Can delete overall risk', 31, 'delete_overallrisk'),
-(124, 'Can view overall risk', 31, 'view_overallrisk');
+(124, 'Can view overall risk', 31, 'view_overallrisk'),
+(125, 'Can add data object', 32, 'add_dataobject'),
+(126, 'Can change data object', 32, 'change_dataobject'),
+(127, 'Can delete data object', 32, 'delete_dataobject'),
+(128, 'Can view data object', 32, 'view_dataobject'),
+(129, 'Can add actor', 33, 'add_actor'),
+(130, 'Can change actor', 33, 'change_actor'),
+(131, 'Can delete actor', 33, 'delete_actor'),
+(132, 'Can view actor', 33, 'view_actor');
 
 -- --------------------------------------------------------
 
@@ -270,12 +278,14 @@ INSERT INTO `django_content_type` (`id`, `app_label`, `model`) VALUES
 (2, 'auth', 'permission'),
 (4, 'auth', 'user'),
 (5, 'contenttypes', 'contenttype'),
+(33, 'parsingbpmn', 'actor'),
 (10, 'parsingbpmn', 'asset'),
 (15, 'parsingbpmn', 'asset_has_attribute'),
 (9, 'parsingbpmn', 'asset_type'),
 (13, 'parsingbpmn', 'attribute'),
 (11, 'parsingbpmn', 'attribute_value'),
 (14, 'parsingbpmn', 'control'),
+(32, 'parsingbpmn', 'dataobject'),
 (31, 'parsingbpmn', 'overallrisk'),
 (8, 'parsingbpmn', 'process'),
 (21, 'parsingbpmn', 'reply'),
@@ -346,7 +356,21 @@ INSERT INTO `django_migrations` (`id`, `app`, `name`, `applied`) VALUES
 (29, 'parsingbpmn', '0009_auto_20220303_1930', '2022-03-03 18:30:34.721832'),
 (30, 'parsingbpmn', '0010_auto_20220303_1956', '2022-03-03 18:57:05.166347'),
 (31, 'parsingbpmn', '0011_auto_20220303_2003', '2022-03-03 19:03:40.608639'),
-(32, 'parsingbpmn', '0012_auto_20220303_2132', '2022-03-03 20:32:58.253143');
+(32, 'parsingbpmn', '0012_auto_20220303_2132', '2022-03-03 20:32:58.253143'),
+(33, 'parsingbpmn', '0002_remove_risk_threat_risk_impact_risk_likelihood_and_more', '2022-03-18 17:02:39.713828'),
+(34, 'parsingbpmn', '0003_dataobject_id', '2022-03-18 17:02:39.724828'),
+(35, 'parsingbpmn', '0004_rename_dataobject_id_dataobject', '2022-03-18 17:02:39.732826'),
+(36, 'parsingbpmn', '0005_remove_risk_threat', '2022-03-18 17:02:39.742827'),
+(37, 'parsingbpmn', '0006_risk_impact', '2022-03-18 17:02:39.754827'),
+(38, 'parsingbpmn', '0007_risk_likelihood', '2022-03-18 17:02:39.768826'),
+(39, 'parsingbpmn', '0008_process_process_bpmn_id', '2022-03-18 17:05:38.020695'),
+(40, 'parsingbpmn', '0009_auto_20220318_1807', '2022-03-18 17:07:10.699771'),
+(41, 'parsingbpmn', '0008_process_process_id_bpmn', '2022-03-18 17:09:43.444670'),
+(42, 'parsingbpmn', '0009_remove_process_process_id_bpmn', '2022-03-18 17:19:25.331861'),
+(43, 'parsingbpmn', '0010_actor', '2022-03-18 17:25:23.570812'),
+(44, 'parsingbpmn', '0011_asset_process_bpmn_id', '2022-03-18 17:40:05.830531'),
+(45, 'parsingbpmn', '0012_auto_20220318_1843', '2022-03-18 17:44:04.383850'),
+(46, 'parsingbpmn', '0013_auto_20220331_1615', '2022-03-31 14:17:33.753912');
 
 -- --------------------------------------------------------
 
@@ -363,6 +387,19 @@ CREATE TABLE `django_session` (
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `parsingbpmn_actor`
+--
+
+CREATE TABLE `parsingbpmn_actor` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `process_bpmn_id` int(11) DEFAULT NULL,
+  `process_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `parsingbpmn_asset`
 --
 
@@ -372,28 +409,313 @@ CREATE TABLE `parsingbpmn_asset` (
   `bpmn_id` varchar(99) DEFAULT NULL,
   `asset_type_id` int(11) DEFAULT NULL,
   `process_id` int(11) NOT NULL,
-  `position` varchar(99) DEFAULT NULL
+  `position` varchar(99) DEFAULT NULL,
+  `process_bpmn_id` varchar(99) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dump dei dati per la tabella `parsingbpmn_asset`
 --
 
-INSERT INTO `parsingbpmn_asset` (`id`, `name`, `bpmn_id`, `asset_type_id`, `process_id`, `position`) VALUES
-(742, 'Compile certificate request', 'Activity_0e44ssw', 3, 68, '310:150:100:80'),
-(743, 'Certificate request', 'Activity_0m5vgkb', 1, 68, '450:150:100:80'),
-(744, 'Recieve notification', 'Activity_15a5z8l', 2, 68, '720:140:100:80'),
-(745, 'Download Certificate', 'Activity_1lh76my', 3, 68, '860:140:100:80'),
-(746, 'Acquire certificate request', 'Activity_075eaka', 2, 68, '450:380:100:80'),
-(747, 'Certificate processing', 'Activity_0yo8nd0', 5, 68, '590:380:100:80'),
-(748, 'Notify certification ready', 'Activity_11l7oi5', 1, 68, '720:380:100:80'),
-(749, 'Compile certificate request', 'Activity_0e44ssw', 3, 69, '310:150:100:80'),
-(750, 'Certificate request', 'Activity_0m5vgkb', 1, 69, '450:150:100:80'),
-(751, 'Recieve notification', 'Activity_15a5z8l', 2, 69, '720:140:100:80'),
-(752, 'Download Certificate', 'Activity_1lh76my', 3, 69, '860:140:100:80'),
-(753, 'Acquire certificate request', 'Activity_075eaka', 2, 69, '450:380:100:80'),
-(754, 'Certificate processing', 'Activity_0yo8nd0', 5, 69, '590:380:100:80'),
-(755, 'Notify certification ready', 'Activity_11l7oi5', 1, 69, '720:380:100:80');
+INSERT INTO `parsingbpmn_asset` (`id`, `name`, `bpmn_id`, `asset_type_id`, `process_id`, `position`, `process_bpmn_id`) VALUES
+(742, 'Compile certificate request', 'Activity_0e44ssw', 3, 68, '310:150:100:80', NULL),
+(743, 'Certificate request', 'Activity_0m5vgkb', 1, 68, '450:150:100:80', NULL),
+(744, 'Recieve notification', 'Activity_15a5z8l', 2, 68, '720:140:100:80', NULL),
+(745, 'Download Certificate', 'Activity_1lh76my', 3, 68, '860:140:100:80', NULL),
+(746, 'Acquire certificate request', 'Activity_075eaka', 2, 68, '450:380:100:80', NULL),
+(747, 'Certificate processing', 'Activity_0yo8nd0', 5, 68, '590:380:100:80', NULL),
+(748, 'Notify certification ready', 'Activity_11l7oi5', 1, 68, '720:380:100:80', NULL),
+(749, 'Compile certificate request', 'Activity_0e44ssw', 3, 69, '310:150:100:80', NULL),
+(750, 'Certificate request', 'Activity_0m5vgkb', 1, 69, '450:150:100:80', NULL),
+(751, 'Recieve notification', 'Activity_15a5z8l', 2, 69, '720:140:100:80', NULL),
+(752, 'Download Certificate', 'Activity_1lh76my', 3, 69, '860:140:100:80', NULL),
+(753, 'Acquire certificate request', 'Activity_075eaka', 2, 69, '450:380:100:80', NULL),
+(754, 'Certificate processing', 'Activity_0yo8nd0', 5, 69, '590:380:100:80', NULL),
+(755, 'Notify certification ready', 'Activity_11l7oi5', 1, 69, '720:380:100:80', NULL),
+(784, 'Compile certificate request', 'Activity_0e44ssw', 3, 74, '310:325:100:80', NULL),
+(785, 'Certificate request', 'Activity_0m5vgkb', 1, 74, '450:325:100:80', NULL),
+(786, 'Recieve notification', 'Activity_15a5z8l', 2, 74, '720:315:100:80', NULL),
+(787, 'Download Certificate', 'Activity_1lh76my', 3, 74, '860:315:100:80', NULL),
+(788, 'Acquire certificate request', 'Activity_075eaka', 2, 74, '450:560:100:80', NULL),
+(789, 'Certificate processing', 'Activity_0yo8nd0', 5, 74, '590:560:100:80', NULL),
+(790, 'Notify certification ready', 'Activity_11l7oi5', 1, 74, '720:560:100:80', NULL),
+(791, 'Compile certificate request', 'Activity_0e44ssw', 3, 75, '310:320:100:80', NULL),
+(792, 'Certificate request', 'Activity_0m5vgkb', 1, 75, '450:320:100:80', NULL),
+(793, 'Recieve notification', 'Activity_15a5z8l', 2, 75, '720:310:100:80', NULL),
+(794, 'Download Certificate', 'Activity_1lh76my', 3, 75, '860:310:100:80', NULL),
+(795, 'Compile certificate request', 'Activity_0e44ssw', 3, 76, '310:320:100:80', NULL),
+(796, 'Certificate request', 'Activity_0m5vgkb', 1, 76, '450:320:100:80', NULL),
+(797, 'Recieve notification', 'Activity_15a5z8l', 2, 76, '720:310:100:80', NULL),
+(798, 'Download Certificate', 'Activity_1lh76my', 3, 76, '860:310:100:80', NULL),
+(799, 'Notifications', 'DataObjectReference_19l4554', 9, 76, '852:215:36:50', NULL),
+(800, 'Certificate', 'DataObjectReference_0wv3x94', 9, 76, '602:215:36:50', NULL),
+(801, 'Personal', 'DataObjectReference_0k0pelp', 9, 76, '422:205:36:50', NULL),
+(802, 'Acquire certificate request', 'Activity_075eaka', 2, 76, '450:550:100:80', NULL),
+(803, 'Certificate processing', 'Activity_0yo8nd0', 5, 76, '590:550:100:80', NULL),
+(804, 'Notify certification ready', 'Activity_11l7oi5', 1, 76, '720:550:100:80', NULL),
+(805, 'Test', 'DataObjectReference_hEUZTUe', 9, 76, '', NULL),
+(806, 'Compile certificate request', 'Activity_0e44ssw', 3, 84, '310:220:100:80', NULL),
+(807, 'Certificate request', 'Activity_0m5vgkb', 1, 84, '450:220:100:80', NULL),
+(808, 'Recieve notification', 'Activity_15a5z8l', 2, 84, '720:210:100:80', NULL),
+(809, 'Download Certificate', 'Activity_1lh76my', 3, 84, '860:210:100:80', NULL),
+(810, 'test', 'DataObjectReference_0ivs7q5', 9, 84, '572:135:36:50', NULL),
+(811, 'Acquire certificate request', 'Activity_075eaka', 2, 84, '450:450:100:80', NULL),
+(812, 'Certificate processing', 'Activity_0yo8nd0', 5, 84, '590:450:100:80', NULL),
+(813, 'Notify certification ready', 'Activity_11l7oi5', 1, 84, '720:450:100:80', NULL),
+(814, 'Compile certificate request', 'Activity_0e44ssw', 3, 86, '310:150:100:80', NULL),
+(815, 'Certificate request', 'Activity_0m5vgkb', 1, 86, '450:150:100:80', NULL),
+(816, 'Recieve notification', 'Activity_15a5z8l', 2, 86, '720:140:100:80', NULL),
+(817, 'Download Certificate', 'Activity_1lh76my', 3, 86, '860:140:100:80', NULL),
+(818, 'Acquire certificate request', 'Activity_075eaka', 2, 86, '450:380:100:80', NULL),
+(819, 'Certificate processing', 'Activity_0yo8nd0', 5, 86, '590:380:100:80', NULL),
+(820, 'Notify certification ready', 'Activity_11l7oi5', 1, 86, '720:380:100:80', NULL),
+(821, 'TestProva', 'Activity_rlsxDDztV', NULL, 86, '100:100:100:100', NULL),
+(822, 'Compile certificate request', 'Activity_0e44ssw', 3, 87, '310:150:100:80', NULL),
+(823, 'Certificate request', 'Activity_0m5vgkb', 1, 87, '450:150:100:80', NULL),
+(824, 'Recieve notification', 'Activity_15a5z8l', 2, 87, '720:140:100:80', NULL),
+(825, 'Download Certificate', 'Activity_1lh76my', 3, 87, '860:140:100:80', NULL),
+(826, 'Acquire certificate request', 'Activity_075eaka', 2, 87, '450:380:100:80', NULL),
+(827, 'Certificate processing', 'Activity_0yo8nd0', 5, 87, '590:380:100:80', NULL),
+(828, 'Notify certification ready', 'Activity_11l7oi5', 1, 87, '720:380:100:80', NULL),
+(829, 'TestProva', 'Activity_rlsxDDztV', NULL, 87, '100:100:100:100', NULL),
+(830, 'Task1', 'Activity_12bl4v5', NULL, 88, '290:170:100:80', NULL),
+(831, 'Task3', 'Activity_0yv2p2r', NULL, 88, '560:170:100:80', NULL),
+(832, 'dato', 'DataObjectReference_14khqej', 9, 88, '412:95:36:50', NULL),
+(833, 'Task2', 'Activity_12x6bgi', NULL, 88, '400:440:100:80', NULL),
+(834, 'Task1', 'Activity_12bl4v5', NULL, 90, '290:170:100:80', NULL),
+(835, 'Task3', 'Activity_0yv2p2r', NULL, 90, '560:170:100:80', NULL),
+(836, 'dato', 'DataObjectReference_14khqej', 9, 90, '412:95:36:50', NULL),
+(837, 'Task2', 'Activity_12x6bgi', NULL, 90, '400:440:100:80', NULL),
+(838, 'Task1', 'Activity_12bl4v5', NULL, 91, '290:170:100:80', NULL),
+(839, 'Task3', 'Activity_0yv2p2r', NULL, 91, '560:170:100:80', NULL),
+(840, 'dato', 'DataObjectReference_14khqej', 9, 91, '412:95:36:50', NULL),
+(841, 'Task2', 'Activity_12x6bgi', NULL, 91, '400:440:100:80', NULL),
+(842, 'Task1', 'Activity_12bl4v5', NULL, 94, '290:170:100:80', NULL),
+(843, 'Compile certificate request', 'Activity_0e44ssw', 3, 97, '310:320:100:80', NULL),
+(844, 'Certificate request', 'Activity_0m5vgkb', 1, 97, '450:320:100:80', NULL),
+(845, 'Recieve notification', 'Activity_15a5z8l', 2, 97, '720:310:100:80', NULL),
+(846, 'Download Certificate', 'Activity_1lh76my', 3, 97, '860:310:100:80', NULL),
+(847, 'Notifications', 'DataObjectReference_19l4554', 9, 97, '852:215:36:50', NULL),
+(848, 'Certificate', 'DataObjectReference_0wv3x94', 9, 97, '602:215:36:50', NULL),
+(849, 'Personal', 'DataObjectReference_0k0pelp', 9, 97, '422:205:36:50', NULL),
+(850, 'Acquire certificate request', 'Activity_075eaka', 2, 97, '450:550:100:80', NULL),
+(851, 'Certificate processing', 'Activity_0yo8nd0', 5, 97, '590:550:100:80', NULL),
+(852, 'Notify certification ready', 'Activity_11l7oi5', 1, 97, '720:550:100:80', NULL),
+(853, 'Compile certificate request', 'Activity_0e44ssw', 3, 98, '310:320:100:80', NULL),
+(854, 'Certificate request', 'Activity_0m5vgkb', 1, 98, '450:320:100:80', NULL),
+(855, 'Recieve notification', 'Activity_15a5z8l', 2, 98, '720:310:100:80', NULL),
+(856, 'Download Certificate', 'Activity_1lh76my', 3, 98, '860:310:100:80', NULL),
+(857, 'Notifications', 'DataObjectReference_19l4554', 9, 98, '852:215:36:50', NULL),
+(858, 'Certificate', 'DataObjectReference_0wv3x94', 9, 98, '602:215:36:50', NULL),
+(859, 'Personal', 'DataObjectReference_0k0pelp', 9, 98, '422:205:36:50', NULL),
+(860, 'Acquire certificate request', 'Activity_075eaka', 2, 98, '450:550:100:80', NULL),
+(861, 'Certificate processing', 'Activity_0yo8nd0', 5, 98, '590:550:100:80', NULL),
+(862, 'Notify certification ready', 'Activity_11l7oi5', 1, 98, '720:550:100:80', NULL),
+(863, 'Compile certificate request', 'Activity_0e44ssw', 3, 99, '310:320:100:80', NULL),
+(864, 'Certificate request', 'Activity_0m5vgkb', 1, 99, '450:320:100:80', NULL),
+(865, 'Recieve notification', 'Activity_15a5z8l', 2, 99, '720:310:100:80', NULL),
+(866, 'Download Certificate', 'Activity_1lh76my', 3, 99, '860:310:100:80', NULL),
+(867, 'Notifications', 'DataObjectReference_19l4554', 9, 99, '852:215:36:50', NULL),
+(868, 'Certificate', 'DataObjectReference_0wv3x94', 9, 99, '602:215:36:50', NULL),
+(869, 'Personal', 'DataObjectReference_0k0pelp', 9, 99, '422:205:36:50', NULL),
+(870, 'Acquire certificate request', 'Activity_075eaka', 2, 99, '450:550:100:80', NULL),
+(871, 'Certificate processing', 'Activity_0yo8nd0', 5, 99, '590:550:100:80', NULL),
+(872, 'Notify certification ready', 'Activity_11l7oi5', 1, 99, '720:550:100:80', NULL),
+(873, 'Compile certificate request', 'Activity_0e44ssw', 3, 102, '310:320:100:80', NULL),
+(874, 'Certificate request', 'Activity_0m5vgkb', 1, 102, '450:320:100:80', NULL),
+(875, 'Recieve notification', 'Activity_15a5z8l', 2, 102, '720:310:100:80', NULL),
+(876, 'Download Certificate', 'Activity_1lh76my', 3, 102, '860:310:100:80', NULL),
+(877, 'Notifications', 'DataObjectReference_19l4554', 9, 102, '852:215:36:50', NULL),
+(878, 'Certificate', 'DataObjectReference_0wv3x94', 9, 102, '602:215:36:50', NULL),
+(879, 'Personal', 'DataObjectReference_0k0pelp', 9, 102, '422:205:36:50', NULL),
+(880, 'Acquire certificate request', 'Activity_075eaka', 2, 102, '450:550:100:80', NULL),
+(881, 'Certificate processing', 'Activity_0yo8nd0', 5, 102, '590:550:100:80', NULL),
+(882, 'Notify certification ready', 'Activity_11l7oi5', 1, 102, '720:550:100:80', NULL),
+(883, 'Compile certificate request', 'Activity_0e44ssw', 3, 103, '310:320:100:80', NULL),
+(884, 'Certificate request', 'Activity_0m5vgkb', 1, 103, '450:320:100:80', NULL),
+(885, 'Recieve notification', 'Activity_15a5z8l', 2, 103, '720:310:100:80', NULL),
+(886, 'Download Certificate', 'Activity_1lh76my', 3, 103, '860:310:100:80', NULL),
+(887, 'Compile certificate request', 'Activity_0e44ssw', 3, 104, '310:320:100:80', NULL),
+(888, 'Certificate request', 'Activity_0m5vgkb', 1, 104, '450:320:100:80', NULL),
+(889, 'Recieve notification', 'Activity_15a5z8l', 2, 104, '720:310:100:80', NULL),
+(890, 'Download Certificate', 'Activity_1lh76my', 3, 104, '860:310:100:80', NULL),
+(891, 'Notifications', 'DataObjectReference_19l4554', 9, 104, '852:215:36:50', 'Process_0gzphmm'),
+(892, 'Certificate', 'DataObjectReference_0wv3x94', 9, 104, '602:215:36:50', 'Process_0gzphmm'),
+(893, 'Personal', 'DataObjectReference_0k0pelp', 9, 104, '422:205:36:50', 'Process_0gzphmm'),
+(894, 'Acquire certificate request', 'Activity_075eaka', 2, 104, '450:550:100:80', NULL),
+(895, 'Certificate processing', 'Activity_0yo8nd0', 5, 104, '590:550:100:80', NULL),
+(896, 'Notify certification ready', 'Activity_11l7oi5', 1, 104, '720:550:100:80', NULL),
+(897, 'Compile certificate request', 'Activity_0e44ssw', 3, 105, '310:320:100:80', NULL),
+(898, 'Certificate request', 'Activity_0m5vgkb', 1, 105, '450:320:100:80', NULL),
+(899, 'Recieve notification', 'Activity_15a5z8l', 2, 105, '720:310:100:80', NULL),
+(900, 'Download Certificate', 'Activity_1lh76my', 3, 105, '860:310:100:80', NULL),
+(901, 'Notifications', 'DataObjectReference_19l4554', 9, 105, '852:215:36:50', 'Process_0gzphmm'),
+(902, 'Certificate', 'DataObjectReference_0wv3x94', 9, 105, '602:215:36:50', 'Process_0gzphmm'),
+(903, 'Personal', 'DataObjectReference_0k0pelp', 9, 105, '422:205:36:50', 'Process_0gzphmm'),
+(904, 'Acquire certificate request', 'Activity_075eaka', 2, 105, '450:550:100:80', NULL),
+(905, 'Certificate processing', 'Activity_0yo8nd0', 5, 105, '590:550:100:80', NULL),
+(906, 'Notify certification ready', 'Activity_11l7oi5', 1, 105, '720:550:100:80', NULL),
+(907, 'Compile certificate request', 'Activity_0e44ssw', 3, 106, '310:320:100:80', 'Process_0gzphmm'),
+(908, 'Certificate request', 'Activity_0m5vgkb', 1, 106, '450:320:100:80', 'Process_0gzphmm'),
+(909, 'Recieve notification', 'Activity_15a5z8l', 2, 106, '720:310:100:80', 'Process_0gzphmm'),
+(910, 'Download Certificate', 'Activity_1lh76my', 3, 106, '860:310:100:80', 'Process_0gzphmm'),
+(911, 'Notifications', 'DataObjectReference_19l4554', 9, 106, '852:215:36:50', 'Process_0gzphmm'),
+(912, 'Certificate', 'DataObjectReference_0wv3x94', 9, 106, '602:215:36:50', 'Process_0gzphmm'),
+(913, 'Personal', 'DataObjectReference_0k0pelp', 9, 106, '422:205:36:50', 'Process_0gzphmm'),
+(914, 'Acquire certificate request', 'Activity_075eaka', 2, 106, '450:550:100:80', 'Process_1mmbaau'),
+(915, 'Certificate processing', 'Activity_0yo8nd0', 5, 106, '590:550:100:80', 'Process_1mmbaau'),
+(916, 'Notify certification ready', 'Activity_11l7oi5', 1, 106, '720:550:100:80', 'Process_1mmbaau'),
+(917, 'Compile certificate request', 'Activity_0e44ssw', 3, 107, '310:320:100:80', 'Process_0gzphmm'),
+(918, 'Certificate request', 'Activity_0m5vgkb', 1, 107, '450:320:100:80', 'Process_0gzphmm'),
+(919, 'Recieve notification', 'Activity_15a5z8l', 2, 107, '720:310:100:80', 'Process_0gzphmm'),
+(920, 'Download Certificate', 'Activity_1lh76my', 3, 107, '860:310:100:80', 'Process_0gzphmm'),
+(921, 'Notifications', 'DataObjectReference_19l4554', 9, 107, '852:215:36:50', 'Process_0gzphmm'),
+(922, 'Certificate', 'DataObjectReference_0wv3x94', 9, 107, '602:215:36:50', 'Process_0gzphmm'),
+(923, 'Personal', 'DataObjectReference_0k0pelp', 9, 107, '422:205:36:50', 'Process_0gzphmm'),
+(924, 'Acquire certificate request', 'Activity_075eaka', 2, 107, '450:550:100:80', 'Process_1mmbaau'),
+(925, 'Certificate processing', 'Activity_0yo8nd0', 5, 107, '590:550:100:80', 'Process_1mmbaau'),
+(926, 'Notify certification ready', 'Activity_11l7oi5', 1, 107, '720:550:100:80', 'Process_1mmbaau'),
+(927, 'Compile certificate request', 'Activity_0e44ssw', 3, 108, '310:150:100:80', 'Process_0gzphmm'),
+(928, 'Certificate request', 'Activity_0m5vgkb', 1, 108, '450:150:100:80', 'Process_0gzphmm'),
+(929, 'Recieve notification', 'Activity_15a5z8l', 2, 108, '720:140:100:80', 'Process_0gzphmm'),
+(930, 'Download Certificate', 'Activity_1lh76my', 3, 108, '860:140:100:80', 'Process_0gzphmm'),
+(931, 'Acquire certificate request', 'Activity_075eaka', 2, 108, '450:380:100:80', 'Process_1mmbaau'),
+(932, 'Certificate processing', 'Activity_0yo8nd0', 5, 108, '590:380:100:80', 'Process_1mmbaau'),
+(933, 'Notify certification ready', 'Activity_11l7oi5', 1, 108, '720:380:100:80', 'Process_1mmbaau'),
+(934, 'Compile certificate request', 'Activity_0e44ssw', 3, 109, '310:320:100:80', 'Process_0gzphmm'),
+(935, 'Certificate request', 'Activity_0m5vgkb', 1, 109, '450:320:100:80', 'Process_0gzphmm'),
+(936, 'Recieve notification', 'Activity_15a5z8l', 2, 109, '720:310:100:80', 'Process_0gzphmm'),
+(937, 'Download Certificate', 'Activity_1lh76my', 3, 109, '860:310:100:80', 'Process_0gzphmm'),
+(938, 'Notifications', 'DataObjectReference_19l4554', 9, 109, '852:215:36:50', 'Process_0gzphmm'),
+(939, 'Certificate', 'DataObjectReference_0wv3x94', 9, 109, '602:215:36:50', 'Process_0gzphmm'),
+(940, 'Personal', 'DataObjectReference_0k0pelp', 9, 109, '422:205:36:50', 'Process_0gzphmm'),
+(941, 'Acquire certificate request', 'Activity_075eaka', 2, 109, '450:550:100:80', 'Process_1mmbaau'),
+(942, 'Certificate processing', 'Activity_0yo8nd0', 5, 109, '590:550:100:80', 'Process_1mmbaau'),
+(943, 'Notify certification ready', 'Activity_11l7oi5', 1, 109, '720:550:100:80', 'Process_1mmbaau'),
+(944, 'Task1', 'Activity_12bl4v5', 1, 110, '290:170:100:80', 'Process_0f53oai'),
+(945, 'Task3', 'Activity_0yv2p2r', 1, 110, '560:170:100:80', 'Process_0f53oai'),
+(946, 'dato', 'DataObjectReference_14khqej', 9, 110, '412:95:36:50', 'Process_0f53oai'),
+(947, 'Task2', 'Activity_12x6bgi', 1, 110, '400:440:100:80', 'Process_0mw1ti3'),
+(948, 'Task1', 'Activity_12bl4v5', 1, 111, '290:170:100:80', 'Process_0f53oai'),
+(949, 'Task3', 'Activity_0yv2p2r', 4, 111, '560:170:100:80', 'Process_0f53oai'),
+(950, 'Task2', 'Activity_12x6bgi', 5, 111, '400:440:100:80', 'Process_0mw1ti3'),
+(951, 'Task2', 'Activity_1q644ta', 1, 112, '614:159:100:80', 'Process_0373j7m'),
+(952, 'Task 1', 'Activity_09jjdbx', 3, 112, '390:159:100:80', 'Process_0373j7m'),
+(953, 'Task2', 'Activity_1q644ta', 1, 113, '614:159:100:80', 'Process_0373j7m'),
+(954, 'Task 1', 'Activity_09jjdbx', 3, 113, '390:159:100:80', 'Process_0373j7m'),
+(955, 'Task2', 'Activity_1q644ta', 1, 114, '614:159:100:80', 'Process_0373j7m'),
+(956, 'Task 1', 'Activity_09jjdbx', 3, 114, '390:159:100:80', 'Process_0373j7m'),
+(957, 'Task2', 'Activity_1q644ta', 1, 115, '614:159:100:80', 'Process_0373j7m'),
+(958, 'Task 1', 'Activity_09jjdbx', 3, 115, '390:159:100:80', 'Process_0373j7m'),
+(959, 'Task1', 'Activity_12bl4v5', 1, 116, '290:170:100:80', 'Process_0f53oai'),
+(960, 'Task3', 'Activity_0yv2p2r', 2, 116, '560:170:100:80', 'Process_0f53oai'),
+(961, 'dato', 'DataObjectReference_14khqej', 9, 116, '412:95:36:50', 'Process_0f53oai'),
+(962, 'Task2', 'Activity_12x6bgi', 1, 116, '400:440:100:80', 'Process_0mw1ti3'),
+(963, 'Task2', 'Activity_1q644ta', 1, 117, '614:159:100:80', 'Process_0373j7m'),
+(964, 'Task 1', 'Activity_09jjdbx', 3, 117, '390:159:100:80', 'Process_0373j7m'),
+(965, 'Task2', 'Activity_1q644ta', 1, 118, '614:159:100:80', 'Process_0373j7m'),
+(966, 'Task 1', 'Activity_09jjdbx', 3, 118, '390:159:100:80', 'Process_0373j7m'),
+(967, 'Task2', 'Activity_1q644ta', 1, 119, '614:159:100:80', 'Process_0373j7m'),
+(968, 'Task 1', 'Activity_09jjdbx', 3, 119, '390:159:100:80', 'Process_0373j7m'),
+(969, 'task1', 'Activity_1iaonrp', 1, 120, '350:220:100:80', 'Process_03g1b8a'),
+(970, 'task2', 'Activity_1n6fgjg', 5, 120, '520:220:100:80', 'Process_03g1b8a'),
+(971, 'task1', 'Activity_1iaonrp', 1, 121, '350:220:100:80', 'Process_03g1b8a'),
+(972, 'task2', 'Activity_1n6fgjg', 3, 121, '520:220:100:80', 'Process_03g1b8a'),
+(973, 'task1', 'Activity_1iaonrp', 1, 122, '350:220:100:80', 'Process_03g1b8a'),
+(974, 'task2', 'Activity_1n6fgjg', 1, 122, '520:220:100:80', 'Process_03g1b8a'),
+(975, 'task1', 'Activity_1iaonrp', 1, 123, '350:220:100:80', 'Process_03g1b8a'),
+(976, 'task2', 'Activity_1n6fgjg', 1, 123, '520:220:100:80', 'Process_03g1b8a'),
+(977, 'task1', 'Activity_1iaonrp', 1, 124, '350:220:100:80', 'Process_03g1b8a'),
+(978, 'task2', 'Activity_1n6fgjg', 2, 124, '520:220:100:80', 'Process_03g1b8a'),
+(979, 'task1', 'Activity_1iaonrp', 1, 125, '350:220:100:80', 'Process_03g1b8a'),
+(980, 'task2', 'Activity_1n6fgjg', 1, 125, '520:220:100:80', 'Process_03g1b8a'),
+(981, 'task1', 'Activity_1iaonrp', 1, 126, '350:220:100:80', 'Process_03g1b8a'),
+(982, 'task2', 'Activity_1n6fgjg', 1, 126, '520:220:100:80', 'Process_03g1b8a'),
+(983, 'task1', 'Activity_1iaonrp', 1, 127, '350:220:100:80', 'Process_03g1b8a'),
+(984, 'task2', 'Activity_1n6fgjg', 1, 127, '520:220:100:80', 'Process_03g1b8a'),
+(985, 'task1', 'Activity_1iaonrp', 1, 128, '350:220:100:80', 'Process_03g1b8a'),
+(986, 'task2', 'Activity_1n6fgjg', 1, 128, '520:220:100:80', 'Process_03g1b8a'),
+(987, 'task1', 'Activity_1iaonrp', 1, 129, '350:220:100:80', 'Process_03g1b8a'),
+(988, 'task2', 'Activity_1n6fgjg', 1, 129, '520:220:100:80', 'Process_03g1b8a'),
+(989, 'task1', 'Activity_1iaonrp', 1, 130, '350:220:100:80', 'Process_03g1b8a'),
+(990, 'task2', 'Activity_1n6fgjg', 2, 130, '520:220:100:80', 'Process_03g1b8a'),
+(991, 'task1', 'Activity_1iaonrp', 1, 131, '350:220:100:80', 'Process_03g1b8a'),
+(992, 'task2', 'Activity_1n6fgjg', 1, 131, '520:220:100:80', 'Process_03g1b8a'),
+(993, 'task1', 'Activity_1iaonrp', 1, 132, '350:220:100:80', 'Process_03g1b8a'),
+(994, 'task2', 'Activity_1n6fgjg', 1, 132, '520:220:100:80', 'Process_03g1b8a'),
+(995, 'task1', 'Activity_1iaonrp', 1, 133, '350:220:100:80', 'Process_03g1b8a'),
+(996, 'task2', 'Activity_1n6fgjg', 1, 133, '520:220:100:80', 'Process_03g1b8a'),
+(997, 'task1', 'Activity_1iaonrp', 1, 134, '350:220:100:80', 'Process_03g1b8a'),
+(998, 'task2', 'Activity_1n6fgjg', 1, 134, '520:220:100:80', 'Process_03g1b8a'),
+(999, 'task1', 'Activity_1iaonrp', 1, 135, '350:220:100:80', 'Process_03g1b8a'),
+(1000, 'task2', 'Activity_1n6fgjg', 1, 135, '520:220:100:80', 'Process_03g1b8a'),
+(1001, 'task1', 'Activity_1iaonrp', 1, 136, '350:220:100:80', 'Process_03g1b8a'),
+(1002, 'task2', 'Activity_1n6fgjg', 5, 136, '520:220:100:80', 'Process_03g1b8a'),
+(1003, 'Prenotazione telefonica', 'Activity_180pib6', 1, 137, '390:100:100:80', 'Process_1xyvfli'),
+(1004, 'Prenotazione con QRCode', 'Activity_0cm5v2m', 1, 137, '390:190:100:80', 'Process_1xyvfli'),
+(1005, 'Prenotazione tramite E-mail', 'Activity_1lwwsbj', 1, 137, '390:290:100:80', 'Process_1xyvfli'),
+(1006, 'Prenotazione Medico di Base', 'Activity_12dpk9l', 1, 137, '390:400:100:80', 'Process_1xyvfli'),
+(1007, 'Pagare il Ticket', 'Activity_017ezyy', 1, 137, '860:240:100:80', 'Process_1xyvfli'),
+(1008, 'Effettua Pagamento', 'Activity_13i8qks', 1, 137, '1230:170:100:80', 'Process_1xyvfli'),
+(1009, 'Si reca in Ambulatorio', 'Activity_0hc8aph', 1, 137, '1780:280:100:80', 'Process_1xyvfli'),
+(1010, 'Fornisce Dati Personali', 'Activity_1atxzvc', 1, 137, '1930:280:100:80', 'Process_1xyvfli'),
+(1011, 'Fornisce i Dati', 'Activity_0o3mpaz', 1, 137, '2270:390:100:80', 'Process_1xyvfli'),
+(1012, 'Ricevo Esiti', 'Activity_1x89g9o', 2, 137, '2580:290:100:80', 'Process_1xyvfli'),
+(1013, 'Convocazione ricevuta', 'Activity_0xi88c7', 1, 137, '2860:200:100:80', 'Process_1xyvfli'),
+(1014, 'Ricezione Ricevuta Pagamento', 'Activity_0sfu0vb', 2, 137, '1400:170:100:80', 'Process_1xyvfli'),
+(1015, 'Riceve Richiesta di Prenotazione', 'Activity_13s2bky', 1, 137, '550:920:100:80', 'Process_1ombx9c'),
+(1016, 'Verifica Disponibilità', 'Activity_0liik3g', 1, 137, '690:920:100:80', 'Process_1ombx9c'),
+(1017, 'Comunicazione Disponibilità', 'Activity_0zdo204', 1, 137, '830:920:100:80', 'Process_1ombx9c'),
+(1018, 'Ricezione Richiesta Pagamento', 'Activity_1bh1nno', 5, 137, '1030:760:100:80', 'Process_1ombx9c'),
+(1019, 'Comunica al paziente che non deve pagare', 'Activity_0t40eea', 1, 137, '1290:690:100:80', 'Process_1ombx9c'),
+(1020, 'Comunica l\'importo da pagare', 'Activity_0mbd5ys', 1, 137, '1300:800:100:80', 'Process_1ombx9c'),
+(1021, 'Ricezione del Pagamento', 'Activity_1in31w4', 2, 137, '1440:800:100:80', 'Process_1ombx9c'),
+(1022, 'Numero di Prenotazione', 'DataObjectReference_07ohlfo', 9, 137, '1682:705:36:50', 'Process_1ombx9c'),
+(1023, 'Verifica numero di Prenotazione', 'Activity_09e2msh', 1, 137, '1780:1050:100:80', 'Process_1ombx9c'),
+(1024, 'Identifica Paziente', 'Activity_1hs56sq', 1, 137, '1930:1050:100:80', 'Process_1ombx9c'),
+(1025, 'Effettua Accesso', 'Activity_1fgr5jf', 1, 137, '2080:1050:100:80', 'Process_1ombx9c'),
+(1026, 'Chiede al paziente la storia Clinica', 'Activity_1unzhs2', 4, 137, '2370:1160:100:80', 'Process_1ombx9c'),
+(1027, 'Legge Storia Clinica', 'Activity_0uooic3', 1, 137, '2370:1050:100:80', 'Process_1ombx9c'),
+(1028, 'Inserisce i dati nel fascicolo', 'Activity_16j6eqq', 2, 137, '2570:1160:100:80', 'Process_1ombx9c'),
+(1029, 'Esegue Esami', 'Activity_0xov70h', 1, 137, '2820:1050:100:80', 'Process_1ombx9c'),
+(1030, 'Convocazione per visita specialistica', 'Activity_0vyog11', 1, 137, '3210:1050:100:80', 'Process_1ombx9c'),
+(1031, 'Invia Risultati', 'Activity_166uysk', 1, 137, '2990:1050:100:80', 'Process_1ombx9c'),
+(1032, 'task1', 'Activity_0sk03aw', 1, 138, '320:170:100:80', 'Process_1lbvsgn'),
+(1033, 'task2', 'Activity_0js94ly', 1, 138, '480:170:100:80', 'Process_1lbvsgn'),
+(1034, 'Dato1', 'DataObjectReference_pCDbTSD', 9, 138, '', NULL),
+(1035, 'Dato2', 'DataObjectReference_qGVQsmj', 9, 138, '', NULL),
+(1036, 'Prenotazione telefonica', 'Activity_180pib6', 1, 139, '390:100:100:80', 'Process_1xyvfli'),
+(1037, 'Prenotazione con QRCode', 'Activity_0cm5v2m', 1, 139, '390:190:100:80', 'Process_1xyvfli'),
+(1038, 'Prenotazione tramite E-mail', 'Activity_1lwwsbj', 5, 139, '390:290:100:80', 'Process_1xyvfli'),
+(1039, 'Prenotazione Medico di Base', 'Activity_12dpk9l', 3, 139, '390:400:100:80', 'Process_1xyvfli'),
+(1040, 'Pagare il Ticket', 'Activity_017ezyy', 1, 139, '860:240:100:80', 'Process_1xyvfli'),
+(1041, 'Effettua Pagamento', 'Activity_13i8qks', 1, 139, '1230:170:100:80', 'Process_1xyvfli'),
+(1042, 'Si reca in Ambulatorio', 'Activity_0hc8aph', 1, 139, '1780:280:100:80', 'Process_1xyvfli'),
+(1043, 'Fornisce Dati Personali', 'Activity_1atxzvc', 1, 139, '1930:280:100:80', 'Process_1xyvfli'),
+(1044, 'Fornisce i Dati', 'Activity_0o3mpaz', 1, 139, '2270:390:100:80', 'Process_1xyvfli'),
+(1045, 'Ricevo Esiti', 'Activity_1x89g9o', 2, 139, '2580:290:100:80', 'Process_1xyvfli'),
+(1046, 'Convocazione ricevuta', 'Activity_0xi88c7', 1, 139, '2860:200:100:80', 'Process_1xyvfli'),
+(1047, 'Ricezione Ricevuta Pagamento', 'Activity_0sfu0vb', 2, 139, '1400:170:100:80', 'Process_1xyvfli'),
+(1048, 'Riceve Richiesta di Prenotazione', 'Activity_13s2bky', 1, 139, '550:920:100:80', 'Process_1ombx9c'),
+(1049, 'Verifica Disponibilità', 'Activity_0liik3g', 1, 139, '690:920:100:80', 'Process_1ombx9c'),
+(1050, 'Comunicazione Disponibilità', 'Activity_0zdo204', 4, 139, '830:920:100:80', 'Process_1ombx9c'),
+(1051, 'Ricezione Richiesta Pagamento', 'Activity_1bh1nno', 1, 139, '1030:760:100:80', 'Process_1ombx9c'),
+(1052, 'Comunica al paziente che non deve pagare', 'Activity_0t40eea', 1, 139, '1290:690:100:80', 'Process_1ombx9c'),
+(1053, 'Comunica l\'importo da pagare', 'Activity_0mbd5ys', 1, 139, '1300:800:100:80', 'Process_1ombx9c'),
+(1054, 'Ricezione del Pagamento', 'Activity_1in31w4', 2, 139, '1440:800:100:80', 'Process_1ombx9c'),
+(1055, 'Numero di Prenotazione', 'DataObjectReference_07ohlfo', 9, 139, '1682:705:36:50', 'Process_1ombx9c'),
+(1056, 'Verifica numero di Prenotazione', 'Activity_09e2msh', 1, 139, '1780:1050:100:80', 'Process_1ombx9c'),
+(1057, 'Identifica Paziente', 'Activity_1hs56sq', 1, 139, '1930:1050:100:80', 'Process_1ombx9c'),
+(1058, 'Effettua Accesso', 'Activity_1fgr5jf', 1, 139, '2080:1050:100:80', 'Process_1ombx9c'),
+(1059, 'Chiede al paziente la storia Clinica', 'Activity_1unzhs2', 1, 139, '2370:1160:100:80', 'Process_1ombx9c'),
+(1060, 'Legge Storia Clinica', 'Activity_0uooic3', 1, 139, '2370:1050:100:80', 'Process_1ombx9c'),
+(1061, 'Inserisce i dati nel fascicolo', 'Activity_16j6eqq', 2, 139, '2570:1160:100:80', 'Process_1ombx9c'),
+(1062, 'Esegue Esami', 'Activity_0xov70h', 1, 139, '2820:1050:100:80', 'Process_1ombx9c'),
+(1063, 'Convocazione per visita specialistica', 'Activity_0vyog11', 1, 139, '3210:1050:100:80', 'Process_1ombx9c'),
+(1064, 'Invia Risultati', 'Activity_166uysk', 1, 139, '2990:1050:100:80', 'Process_1ombx9c'),
+(1065, 'task1', 'Activity_1nai1e7', 1, 140, '360:120:100:80', 'Process_020lh86'),
+(1066, 'task2', 'Activity_16dgztb', 5, 140, '530:120:100:80', 'Process_020lh86'),
+(1067, 'PROVA', 'DataObjectReference_iOQNPGI', 9, 140, '', NULL);
 
 -- --------------------------------------------------------
 
@@ -425,7 +747,47 @@ INSERT INTO `parsingbpmn_asset_has_attribute` (`id`, `asset_id`, `attribute_id`)
 (428, 752, 7),
 (429, 753, 4),
 (430, 754, 10),
-(431, 755, 1);
+(431, 755, 1),
+(439, 853, 7),
+(440, 854, 1),
+(441, 855, 4),
+(442, 856, 7),
+(443, 860, 4),
+(444, 861, 10),
+(445, 862, 1),
+(446, 853, 7),
+(447, 854, 1),
+(448, 855, 4),
+(449, 856, 7),
+(450, 860, 4),
+(451, 861, 10),
+(452, 862, 1),
+(453, 917, 7),
+(454, 918, 1),
+(455, 919, 4),
+(456, 920, 7),
+(457, 924, 4),
+(458, 925, 10),
+(459, 926, 1),
+(460, 927, 7),
+(461, 928, 1),
+(462, 929, 4),
+(463, 930, 7),
+(464, 931, 4),
+(465, 932, 10),
+(466, 933, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Struttura della tabella `parsingbpmn_asset_has_dataobject_attribute`
+--
+
+CREATE TABLE `parsingbpmn_asset_has_dataobject_attribute` (
+  `id` int(11) NOT NULL,
+  `asset_id` int(11) NOT NULL,
+  `asset_type_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -450,7 +812,8 @@ INSERT INTO `parsingbpmn_asset_type` (`id`, `name`, `description`) VALUES
 (4, 'Manual task', 'A Manual Task is a Task that is performed physically.'),
 (5, 'Service task', 'A Service Task is a Task that uses a Web service, an automated application, or other kinds of service in completing the task.'),
 (6, 'Script task', 'A Script Task is executed by a business process engine. The task defines a script that the engine can interpret. When the task begin, the engine will execute the script. The Task will be completed when the script is completed.'),
-(7, 'Business rule task', 'It provides a mechanism for a process to provide input to a Business Rules Engine and then obtain the output provided by the Business Rules Engine. As for service and script task, it is a task without human interaction.');
+(7, 'Business rule task', 'It provides a mechanism for a process to provide input to a Business Rules Engine and then obtain the output provided by the Business Rules Engine. As for service and script task, it is a task without human interaction.'),
+(9, 'DataObject', 'Data Objects may represent e.g. documents used in a process, both in physical and digital form. They look like a page with folded top right corner');
 
 -- --------------------------------------------------------
 
@@ -555,6 +918,20 @@ INSERT INTO `parsingbpmn_control` (`id`, `name`, `description`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `parsingbpmn_dataobjectattribute`
+--
+
+CREATE TABLE `parsingbpmn_dataobjectattribute` (
+  `id` int(11) NOT NULL,
+  `size` int(11) DEFAULT NULL,
+  `order_of_size` varchar(100) NOT NULL,
+  `personal` varchar(100) NOT NULL,
+  `load_dependece` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `parsingbpmn_overallrisk`
 --
 
@@ -603,7 +980,74 @@ CREATE TABLE `parsingbpmn_process` (
 
 INSERT INTO `parsingbpmn_process` (`id`, `name`, `xml`, `system_id`) VALUES
 (68, 'Municipality', 'processes/xml/bpmn_1.0_alxG2XZ.bpmn', 8),
-(69, 'Municipality', 'processes/xml/bpmn_1.0_kYQIAXL.bpmn', 11);
+(69, 'Municipality', 'processes/xml/bpmn_1.0_kYQIAXL.bpmn', 11),
+(74, 'Municipality2', 'processes/xml/diagram_3.bpmn', 11),
+(75, 'DataObjectExample', 'processes/xml/dataobjsu2task.bpmn', 11),
+(76, 'DataObjectExample', '', 11),
+(77, 'test', 'processes/xml/bpmnDataobj.bpmn', 11),
+(78, 'test', 'processes/xml/bpmnDataobj_HDK98xl.bpmn', 11),
+(79, 'test', 'processes/xml/bpmnDataobj_5s75NNb.bpmn', 11),
+(80, 'test', 'processes/xml/bpmnDataobj_4Qoix1S.bpmn', 11),
+(81, 'test', 'processes/xml/bpmnDataobj_6vglDQ1.bpmn', 11),
+(82, 'test', 'processes/xml/bpmnDataobj_2SApevr.bpmn', 11),
+(83, 'test', 'processes/xml/bpmnDataobj_6PGQSI4.bpmn', 11),
+(84, 'test', 'processes/xml/bpmnDataobj_Hsbs6Fw.bpmn', 11),
+(85, 'test', 'processes/xml/bpmn3.bpmn', 8),
+(86, 'test', 'processes/xml/bpmn3_kAo3rfV.bpmn', 8),
+(87, 'test', 'processes/xml/bpmn3_sVgNIOH.bpmn', 8),
+(88, 'test', 'processes/xml/diagram_esempio.bpmn', 8),
+(89, 'test', 'processes/xml/diagram_esempio_FcFWxIB.bpmn', 8),
+(90, 'test', 'processes/xml/diagram_esempio_FS6kNb8.bpmn', 8),
+(91, 'test', 'processes/xml/diagram_esempio_behvdMU.bpmn', 8),
+(92, 'test', 'processes/xml/diagram_esempio_iKB7ZZB.bpmn', 8),
+(93, 'test', 'processes/xml/diagram_esempio_h7zLi2S.bpmn', 8),
+(94, 'test', 'processes/xml/diagram_esempio_cu2xLHa.bpmn', 8),
+(95, 'test2', 'processes/xml/dataobjsu2task.bpmn', 8),
+(96, 'test2', 'processes/xml/dataobjsu2task_AFoNmkc.bpmn', 8),
+(97, 'test2', 'processes/xml/dataobjsu2task_9VmRl6P.bpmn', 8),
+(98, 'test2', 'processes/xml/dataobjsu2task_UMEwoZS.bpmn', 8),
+(99, 'test3', 'processes/xml/dataobjsu2task_lqFWxGv.bpmn', 3),
+(100, 'test3', 'processes/xml/dataobjsu2task_NpQCPIo.bpmn', 3),
+(101, 'test3', 'processes/xml/dataobjsu2task_9s5U0r9.bpmn', 3),
+(102, 'test3', 'processes/xml/dataobjsu2task_qxOv1B8.bpmn', 3),
+(103, 'Municipality', 'processes/xml/dataobjsu2task_NZr7VpG.bpmn', 3),
+(104, 'Municipality', 'processes/xml/dataobjsu2task_oBvWuBt.bpmn', 3),
+(105, 'Municipality', 'processes/xml/dataobjsu2task_j3eukn6.bpmn', 3),
+(106, 'Municipality', 'processes/xml/dataobjsu2task_Fx26vtM.bpmn', 3),
+(107, 'Municipality', 'processes/xml/dataobjsu2task_h926ChB.bpmn', 3),
+(108, 'Municipality3322', 'processes/xml/bpmn2.bpmn', 3),
+(109, 'Municipality022', 'processes/xml/dataobjsu2task_fiow2Yr.bpmn', 3),
+(110, 'Test19.1', 'processes/xml/diagram_esempio_510H7xf.bpmn', 3),
+(111, 'Test19.2', 'processes/xml/diagram_4.bpmn', 3),
+(112, 'Test19.3', 'processes/xml/diagram_5.bpmn', 3),
+(113, 'Test19.4', 'processes/xml/diagram_5_FjafleX.bpmn', 3),
+(114, 'Test19.5', 'processes/xml/diagram_5_da6UrWh.bpmn', 3),
+(115, 'Test19.6', 'processes/xml/diagram_5_464VmXw.bpmn', 3),
+(116, 'Test19.7', 'processes/xml/diagram_esempio_2kdgGYJ.bpmn', 3),
+(117, 'Test19.20', 'processes/xml/diagram_6.bpmn', 3),
+(118, 'test1.0', 'processes/xml/diagram_6_SsDxBWm.bpmn', 12),
+(119, 'test1.1', 'processes/xml/diagram1.bpmn', 12),
+(120, 'test1.2', 'processes/xml/es1_-_Copia.bpmn', 12),
+(121, 'test1.3', 'processes/xml/es1_-_Copia_pQcFlvX.bpmn', 12),
+(122, 'test1.4', 'processes/xml/es1_-_Copia_2JGyNFH.bpmn', 12),
+(123, 'test1.5', 'processes/xml/es1_-_Copia_wUFyJGT.bpmn', 12),
+(124, 'test1.6', 'processes/xml/es1_-_Copia_QUGbyUA.bpmn', 12),
+(125, 'test 1.7', 'processes/xml/es1_-_Copia_0dXt07W.bpmn', 12),
+(126, 'test1.8', 'processes/xml/es1_-_Copia_uPFIeOv.bpmn', 12),
+(127, 'test1.9', 'processes/xml/es1_-_Copia_SH37mw6.bpmn', 12),
+(128, 'test2.0', 'processes/xml/es1_-_Copia_JwXvl4F.bpmn', 12),
+(129, 'test2.1', 'processes/xml/es1_-_Copia_7NSSW7r.bpmn', 12),
+(130, 'test2.2', 'processes/xml/es1_-_Copia_XFh1Yk8.bpmn', 12),
+(131, 'test2.3', 'processes/xml/es1_-_Copia_7flxXms.bpmn', 12),
+(132, 'test2.4', 'processes/xml/es1_-_Copia_z7LKkdL.bpmn', 12),
+(133, 'test2.5', 'processes/xml/es1_-_Copia_UMrCs8T.bpmn', 12),
+(134, 'test2.6', 'processes/xml/es1_-_Copia_MYimQ1i.bpmn', 12),
+(135, 'test1.0', 'processes/xml/es1_-_Copia_rIYG2wl.bpmn', 13),
+(136, 'test1.1', 'processes/xml/es1_-_Copia_2dNUDER.bpmn', 13),
+(137, 'Picariello', 'processes/xml/DiagrammaPicariello.bpmn', 14),
+(138, 'test1.0', 'processes/xml/es1.bpmn', 14),
+(139, 'PicarielloBPMN', 'processes/xml/DiagrammaPicariello_1.bpmn', 15),
+(140, 'TEST1.0', 'processes/xml/diagramTEST.bpmn', 16);
 
 -- --------------------------------------------------------
 
@@ -838,7 +1282,12 @@ CREATE TABLE `parsingbpmn_system` (
 INSERT INTO `parsingbpmn_system` (`id`, `name`) VALUES
 (3, 'Regione Campania'),
 (8, 'Unicampania'),
-(11, 'Municipality');
+(11, 'Municipality'),
+(12, 'Test'),
+(13, 'test2'),
+(14, 'test3'),
+(15, 'Picariello'),
+(16, 'TEST4');
 
 -- --------------------------------------------------------
 
@@ -2321,6 +2770,13 @@ ALTER TABLE `django_session`
   ADD KEY `django_session_expire_date_a5c62663` (`expire_date`);
 
 --
+-- Indici per le tabelle `parsingbpmn_actor`
+--
+ALTER TABLE `parsingbpmn_actor`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `parsingbpmn_actor_process_id_d24aa330_fk_parsingbpmn_system_id` (`process_id`);
+
+--
 -- Indici per le tabelle `parsingbpmn_asset`
 --
 ALTER TABLE `parsingbpmn_asset`
@@ -2335,6 +2791,12 @@ ALTER TABLE `parsingbpmn_asset_has_attribute`
   ADD PRIMARY KEY (`id`),
   ADD KEY `parsingbpmn_asset_ha_asset_id_aa73cc70_fk_parsingbp` (`asset_id`),
   ADD KEY `parsingbpmn_asset_ha_attribute_id_1481f8c4_fk_parsingbp` (`attribute_id`);
+
+--
+-- Indici per le tabelle `parsingbpmn_asset_has_dataobject_attribute`
+--
+ALTER TABLE `parsingbpmn_asset_has_dataobject_attribute`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indici per le tabelle `parsingbpmn_asset_type`
@@ -2360,6 +2822,12 @@ ALTER TABLE `parsingbpmn_attribute_value`
 -- Indici per le tabelle `parsingbpmn_control`
 --
 ALTER TABLE `parsingbpmn_control`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indici per le tabelle `parsingbpmn_dataobjectattribute`
+--
+ALTER TABLE `parsingbpmn_dataobjectattribute`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2522,7 +2990,7 @@ ALTER TABLE `auth_group_permissions`
 -- AUTO_INCREMENT per la tabella `auth_permission`
 --
 ALTER TABLE `auth_permission`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
 
 --
 -- AUTO_INCREMENT per la tabella `auth_user`
@@ -2552,31 +3020,43 @@ ALTER TABLE `django_admin_log`
 -- AUTO_INCREMENT per la tabella `django_content_type`
 --
 ALTER TABLE `django_content_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT per la tabella `django_migrations`
 --
 ALTER TABLE `django_migrations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+
+--
+-- AUTO_INCREMENT per la tabella `parsingbpmn_actor`
+--
+ALTER TABLE `parsingbpmn_actor`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset`
 --
 ALTER TABLE `parsingbpmn_asset`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=756;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1068;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_has_attribute`
 --
 ALTER TABLE `parsingbpmn_asset_has_attribute`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=432;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=467;
+
+--
+-- AUTO_INCREMENT per la tabella `parsingbpmn_asset_has_dataobject_attribute`
+--
+ALTER TABLE `parsingbpmn_asset_has_dataobject_attribute`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_asset_type`
 --
 ALTER TABLE `parsingbpmn_asset_type`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_attribute`
@@ -2597,6 +3077,12 @@ ALTER TABLE `parsingbpmn_control`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
+-- AUTO_INCREMENT per la tabella `parsingbpmn_dataobjectattribute`
+--
+ALTER TABLE `parsingbpmn_dataobjectattribute`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT per la tabella `parsingbpmn_overallrisk`
 --
 ALTER TABLE `parsingbpmn_overallrisk`
@@ -2606,7 +3092,7 @@ ALTER TABLE `parsingbpmn_overallrisk`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_process`
 --
 ALTER TABLE `parsingbpmn_process`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_reply`
@@ -2636,7 +3122,7 @@ ALTER TABLE `parsingbpmn_strideimpactrecord`
 -- AUTO_INCREMENT per la tabella `parsingbpmn_system`
 --
 ALTER TABLE `parsingbpmn_system`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT per la tabella `parsingbpmn_system_threatagent`
@@ -2747,6 +3233,12 @@ ALTER TABLE `auth_user_user_permissions`
 ALTER TABLE `django_admin_log`
   ADD CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`),
   ADD CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`);
+
+--
+-- Limiti per la tabella `parsingbpmn_actor`
+--
+ALTER TABLE `parsingbpmn_actor`
+  ADD CONSTRAINT `parsingbpmn_actor_process_id_d24aa330_fk_parsingbpmn_system_id` FOREIGN KEY (`process_id`) REFERENCES `parsingbpmn_system` (`id`);
 
 --
 -- Limiti per la tabella `parsingbpmn_asset`

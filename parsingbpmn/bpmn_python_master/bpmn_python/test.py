@@ -3,7 +3,7 @@ from parsingbpmn.bpmn_python_master.bpmn_python import bpmn_import_utils as util
 from parsingbpmn.bpmn_python_master.bpmn_python import bpmn_python_consts as consts
 
 bpmn_graph = diagram.BpmnDiagramGraph()
-bpmn_graph.load_diagram_from_xml_file(r"C:\Users\danie\Desktop\es7.0.bpmn")
+bpmn_graph.load_diagram_from_xml_file(r"C:\Users\danie\Desktop\es11.0.bpmn")
 
 
 
@@ -37,7 +37,7 @@ bpmn_graph.load_diagram_from_xml_file(r"C:\Users\danie\Desktop\es7.0.bpmn")
 #bpmn_graph.add_dataOutput_to_diagram("Activity_0sk03aw",id_dataobjectref2, None)
 
 
-bpmn_graph.export_xml_file(r"C:\Users\danie\Desktop", "\es7.1.bpmn")
+bpmn_graph.export_xml_file(r"C:\Users\danie\Desktop", "\es11.1.bpmn")
 
 """
 for tuple in lista:

@@ -1,6 +1,8 @@
+import enum
+
 from django.db import models
 from django.core.validators import FileExtensionValidator
-
+from.Enum.enum import personal
 # Create your models here.
 
 class System(models.Model):
@@ -129,12 +131,17 @@ class Asset_has_attribute(models.Model):
     attribute = models.ForeignKey(Attribute,on_delete=models.CASCADE)
 
 
-class DataObject(models.Model):
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, null=True)
-    id_dataobj =models.CharField(max_length=100)
-    id_dataobj_ref = models.CharField(max_length=100)
+class DataObjectAttribute(models.Model):
 
+    size = models.IntegerField(null=True)
+    order_of_size = models.CharField(max_length=100)
+    personal = models.CharField(choices=personal,default="Yes",max_length=100)
+    load_dependece = models.IntegerField(null=True)
 
+class Asset_has_DataObject_attribute(models.Model):
+    asset = models.ForeignKey(Asset,on_delete=models.CASCADE)
+    data_object_attribute = models.ForeignKey(DataObjectAttribute,on_delete=models.CASCADE)
+    asset_type = models.ForeignKey(Asset_type,on_delete=models.CASCADE)
 
 class Threat_has_attribute(models.Model):
     threat = models.ForeignKey(Threat,on_delete=models.CASCADE)
