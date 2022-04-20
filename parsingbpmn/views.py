@@ -1144,12 +1144,12 @@ def threat_agent_generation(request, systemId, processId, assetId):
     for reply in request.POST:  # per ogni risposta al questionario
         if (reply != 'csrfmiddlewaretoken'):
             ReplyObject = Reply.objects.filter(reply=reply).get()
+            question = TAReplies_Question.objects.filter(reply=ReplyObject)
             tareplycategories = TAReplyCategory.objects.filter(reply=ReplyObject)
             TAList = []
             for replycategory in tareplycategories.all():  # ogni categoria relativa ad una singola risposta
                 # print(replycategory.reply.reply + " "+ replycategory.category.category)
                 TAList.append(replycategory.category)
-                question = TAReplies_Question.objects.filter(reply=ReplyObject)
             ThreatAgentsPerAsset.append((TAList, question))
     numQ3 = 0
     numQ4 = 0
