@@ -65,7 +65,7 @@ class BpmnDiagramGraph(object):
         :param filepath: string with output filepath.
         """
 
-        bpmn_import.BpmnDiagramGraphImport.load_diagram_from_xml(filepath, self)
+        return bpmn_import.BpmnDiagramGraphImport.load_diagram_from_xml(filepath,self)
 
     def export_xml_file(self, directory, filename):
         """
@@ -113,6 +113,8 @@ class BpmnDiagramGraph(object):
         :param node_type: string with valid BPMN XML tag name (e.g. 'task', 'sequenceFlow').
         """
         tmp_nodes = self.diagram_graph.nodes(True)
+
+
         if node_type == "":
             return tmp_nodes
         else:
@@ -427,10 +429,8 @@ class BpmnDiagramGraph(object):
         """
         letters = string.ascii_letters
         result_str = ''.join(random.choice(letters) for i in range(9))
-
-        self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation] = {}
-        self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.id] = {}
-        self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.target_ref] = {}
+        #print(self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation],"controlla qua")
+        single_dataoutput_assoc_dict = {}
 
         if dataOut_Ass is None:
             dataOut_Ass = "DataOutputAssociation_" + result_str
@@ -443,15 +443,29 @@ class BpmnDiagramGraph(object):
         # self.diagram_graph._node[node_id][consts.Consts.process] = process_id
 
         # Adding dataoutput association
-        self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.id] = dataOut_Ass
-        self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.target_ref] = targetRef
+        single_dataoutput_assoc_dict[consts.Consts.id] = dataOut_Ass
+        single_dataoutput_assoc_dict[consts.Consts.target_ref] = targetRef
+        single_dataoutput_assoc_dict[consts.Consts.x] = Targetx
+        single_dataoutput_assoc_dict[consts.Consts.y] = Targety
+        try:
+            self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation].append(single_dataoutput_assoc_dict)
+        except KeyError:
+            print("error")
+            return None, None
+
+
+
+
+
+
+        #self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.id] = dataOut_Ass
+        #self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.target_ref] = targetRef
 
         # Adding some dummy constant values
         # self.diagram_graph._node[node_id][consts.Consts.width] = "100"
         # self.diagram_graph._node[node_id][consts.Consts.height] = "100"
-        self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.x] = Targetx
-        self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.y] = Targety
-        return node_id, self.diagram_graph._node[node_id]
+        #self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.x] = Targetx
+        #self.diagram_graph._node[node_id][consts.Consts.dataOutputAssociation][consts.Consts.y] = Targety
 
     def add_task_to_diagram(self, process_id, task_name="", node_id=None):
         """

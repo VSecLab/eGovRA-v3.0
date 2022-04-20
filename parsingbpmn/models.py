@@ -40,8 +40,9 @@ class Process(models.Model):
 
 class Actor(models.Model):
     name = models.CharField(max_length=100,null=True)
-    process = models.ForeignKey(System, on_delete=models.CASCADE)
-    process_bpmn_id = models.IntegerField(null=True)
+    process = models.ForeignKey(Process, on_delete=models.CASCADE)
+    process_bpmn_id = models.CharField(max_length=100,null=True)
+
 
 
 
@@ -143,6 +144,8 @@ class Asset_has_DataObject_attribute(models.Model):
     data_object_attribute = models.ForeignKey(DataObjectAttribute,on_delete=models.CASCADE)
     asset_type = models.ForeignKey(Asset_type,on_delete=models.CASCADE)
 
+
+
 class Threat_has_attribute(models.Model):
     threat = models.ForeignKey(Threat,on_delete=models.CASCADE)
     attribute = models.ForeignKey(Attribute,on_delete=models.CASCADE)
@@ -153,6 +156,14 @@ class Threat_has_control(models.Model):
 
 # AL MODELLO DEI DATI MANCA SOLO LA PARTE RELATIVA AI THREAT AGENTS
 
+class Task_manages_Data(models.Model):
+    task = models.ForeignKey(Asset,on_delete=models.CASCADE,related_name="task")
+    data = models.ForeignKey(Asset,on_delete=models.CASCADE,related_name="data")
+
+class Actor_manage_Data(models.Model):
+    actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
+    data = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    process = models.ForeignKey(Process, on_delete=models.CASCADE,null=True)
 
 class ThreatAgentCategory(models.Model):
     category = models.CharField(max_length=100,null=True)

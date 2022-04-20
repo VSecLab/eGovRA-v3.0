@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 import os
 
+from django.core import serializers
 from django.core.files.storage import FileSystemStorage
 from django.core.serializers import python
 from django.http import HttpResponse
@@ -17,8 +18,8 @@ from .forms import ProcessForm, SystemForm
 from .models import Process, Asset, System, Asset_has_attribute, Attribute, Asset_type, Attribute_value, \
     Threat_has_attribute, Threat_has_control, ThreatAgentRiskScores, TACategoryAttribute, ThreatAgentCategory, \
     System_ThreatAgent, TAReplies_Question, TAReplyCategory, Reply, ThreatAgentQuestion, StrideImpactRecord, Stride, \
-    Threat_Stride, Risk, OverallRisk,Actor
-from .Utils.Const import x_padding,y_padding
+    Threat_Stride, Risk, OverallRisk, Actor, DataObjectAttribute, Asset_has_DataObject_attribute, Task_manages_Data, Actor_manage_Data
+from .Utils.Const import x_padding,y_padding, x_padding_do, y_padding_do, width_do,heigth_do
 from .bpmn_python_master.bpmn_python import bpmn_diagram_rep as diagram
 
 
@@ -54,8 +55,15 @@ def bpmn_process_management(request, systemId):
 
             bpmn_graph = diagram.BpmnDiagramGraph()
             pk = last_process.pk
-            bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
+            print(pk,"PK")
+            collaboration = bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
 
+            print(collaboration)
+            for id,participant in collaboration['participants'].items():
+                print(participant['name'])
+                actor = Actor(name=participant['name'],process_id=pk,
+                                  process_bpmn_id=participant['processRef'])
+                actor.save()
 
             #var = Actor.objects.all().get_or_create("",last_process,"")
 
@@ -63,7 +71,7 @@ def bpmn_process_management(request, systemId):
 
 
 
-            # print(lista)
+            print(lista)
             annotations = []
             associations = []
             dataOBJ = []
@@ -97,6 +105,7 @@ def bpmn_process_management(request, systemId):
             for tuple in lista:
                 for dizionario in tuple:
                     if type(dizionario) is dict:
+                        print(dizionario,"QUA")
                         if dizionario['type'].lower().endswith("task"):
                             attribute_value = []
                             id_task = dizionario['id']
@@ -213,10 +222,11 @@ def bpmn_process_management(request, systemId):
 
                             except KeyError:
                                 print()
-                            asset = Asset(name=dizionario['node_name'], bpmn_id=dizionario["id"], position=position,
+                            asset = Asset(name=dizionario['node_name'], bpmn_id=dizionario["id"]+ ":" + dizionario["dataObjectRef"], position=position,
                                           process=Process.objects.get(pk=pk), asset_type=asset_type,process_bpmn_id=process_id_bpmn)
-
                             asset.save()
+                            actor = Actor.objects.filter(process_bpmn_id=process_id_bpmn).first()
+                            Actor_manage_Data(actor=actor, data=asset,process=Process.objects.get(pk=pk)).save()
 
 
             return redirect('process_data_object_input', systemId, pk)
@@ -262,7 +272,7 @@ def delete_Dataobj(request, systemId, processID, assetId):
 
 def process_view_task_type(request, systemId, processId):
     pk = processId
-    task_list = Asset.objects.filter(process=Process.objects.get(pk=pk))
+    task_list = Asset.objects.filter(process=Process.objects.get(pk=pk)).exclude(asset_type=9)
     check_attribute = False
     for task in task_list:
         if task.asset_type == None:# and task.asset_type.lower().endswith("task"):
@@ -1568,20 +1578,204 @@ def risk_analysis_result(request, systemId, processId):
 
 
 def process_data_object_input(request, systemId, processId):
-    nameprocess = Process.objects.get(pk=processId)
+    process = Process.objects.get(pk=processId)
     asset_type = Asset_type.objects.get(name="DataObject")
-    lista = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
-    list_data = []
-    for tuple in lista:
-        list_data.append(tuple)
+    list_data = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
+
+    actors_manage_data = Actor_manage_Data.objects.filter(process=process)
+    actors = Actor.objects.filter(process=process)
+    actors_names = []
+    for actor in actors:
+        actors_names.append(actor.name)
+    actors_names = serializers.serialize("json", actors)
     return render(request, 'process_dataobject_input.html',
-                  {"systemId": systemId, "processId": processId, "list_data": list_data})
+                  {"systemId": systemId, "processId": processId, "list_data": list_data, "actors_manage_data":actors_manage_data
+                   ,"actors":actors_names})
 
 
+def task_manage_data(request,systemId,processId):
+    post_data = dict(request.POST.lists())
+   #print(dict(request.POST),"check here")
+    for data,tasks in post_data.items():
+        if (data != "csrfmiddlewaretoken"):
+            #print(data,tasks)
+            for task in tasks:
+                task_db= Asset.objects.filter(name=task).first().id
+                id_data = data.split(':')[0]
+                data_db = Asset.objects.filter(bpmn_id=data).first()
+                #print(task_db,data_db,"QUA")
+                task_manage_data = Task_manages_Data(task_id=Asset.objects.filter(name=task).first().id
+                                                     ,data_id=Asset.objects.filter(bpmn_id=data).first().id)
+                task_manage_data.save()
+
+    manually_added_data = Asset.objects.filter(process=Process.objects.filter(pk=processId).first())
+    print(manually_added_data)
+
+    pathfile = Process.objects.filter(id=processId)[0].xml
+    pathBPMN, filename = os.path.split(str(pathfile))
+    pathBPMN = pathBPMN + "/"
+    bpmn_graph = diagram.BpmnDiagramGraph()
+    bpmn_graph.load_diagram_from_xml_file(pathfile)
+    for manually_added_single_data in manually_added_data:
+        if manually_added_single_data.process_bpmn_id is None:
+            actor_manage_data = Actor_manage_Data.objects.filter(data_id=manually_added_single_data.id).first()
+            print(actor_manage_data.actor.process_bpmn_id)
+            tasks_manage_data = Task_manages_Data.objects.filter(data_id=manually_added_single_data.id)
+            task_manage_data_result = tasks_manage_data.first()
+            for task_manage_data in tasks_manage_data:
+                if task_manage_data.task.process_bpmn_id == actor_manage_data.actor.process_bpmn_id:
+                    task_manage_data_result = task_manage_data
+
+            manually_added_single_data.process_bpmn_id = actor_manage_data.actor.process_bpmn_id
+            position = task_manage_data_result.task.position.split(":")
+            x = str(int(position[0]) + x_padding_do)
+            y = str(int(position[1]) - y_padding_do)
+            width = width_do
+            height = heigth_do
+            manually_added_single_data.position = str(x)+":"+str(y)+":"+str(width)+":"+str(height)
+            id_data_obj = manually_added_single_data.bpmn_id.split(":")
+            data_obj_bpmnid = id_data_obj[1]
+            data_obj_ref_bpmnid = id_data_obj[0]
+
+            #bpmn_graph.add_dataObject_to_diagram(manually_added_single_data.process_bpmn_id, data_obj_bpmnid)
+            #bpmn_graph.add_dataObjectReference_to_diagram(manually_added_single_data.process_bpmn_id,
+                                                                                      #x, y,manually_added_single_data.name,
+                                                                                      #data_obj_bpmnid, data_obj_ref_bpmnid)
+            x1, y1, id_dataobjectref1 = bpmn_graph.add_dataObject_with_Association_to_diagram(manually_added_single_data.process_bpmn_id,
+                                                                                              manually_added_single_data.name, x,
+                                                                                              y)
+            for task_manage_data_createassoc in tasks_manage_data:
+                print(task_manage_data_createassoc.task.bpmn_id,"here")
+                bpmn_graph.add_dataOutput_to_diagram(task_manage_data_createassoc.task.bpmn_id,x,y,id_dataobjectref1, None)
+
+            asset_has_dataobj = Asset_has_DataObject_attribute.objects.filter(asset_id=manually_added_single_data.id).first()
+
+            attributes = DataObjectAttribute.objects.filter(id=asset_has_dataobj.id).first()
+
+            personal_value = ""
+            if attributes.personal == 1:
+                personal_value = "Personal:Yes"
+            else:
+                personal_value = "Personal:No"
+
+            size_value = "Size:"+str(attributes.size)+" "+str(attributes.order_of_size)
+            load_value = "Load dependence:"+str(attributes.load_dependece)
+
+            textAnnotationBpmn1 = bpmn_graph.add_textAnnotation_to_diagram(manually_added_single_data.process_bpmn_id, x, y,
+                                                                          personal_value, None)
+            textAnnotationBpmn2 = bpmn_graph.add_textAnnotation_to_diagram(manually_added_single_data.process_bpmn_id, x,
+                                                                          y,
+                                                                          size_value, None)
+            textAnnotationBpmn3 = bpmn_graph.add_textAnnotation_to_diagram(manually_added_single_data.process_bpmn_id, x,
+                                                                          y,
+                                                                          load_value, None)
+            bpmn_graph.add_Association_to_diagram(manually_added_single_data.process_bpmn_id, manually_added_single_data.bpmn_id, textAnnotationBpmn1[1]['id'],
+                                                  None)
+            bpmn_graph.add_Association_to_diagram(manually_added_single_data.process_bpmn_id,
+                                                  manually_added_single_data.bpmn_id, textAnnotationBpmn2[1]['id'],
+                                                  None)
+            bpmn_graph.add_Association_to_diagram(manually_added_single_data.process_bpmn_id,
+                                                  manually_added_single_data.bpmn_id, textAnnotationBpmn3[1]['id'],
+                                                  None)
+            manually_added_single_data.save()
+        bpmn_graph.export_xml_file(pathBPMN, filename)
+
+
+
+
+
+
+
+
+
+
+
+
+    return redirect('process_view_task_type', systemId, processId)
 
 def export_dataobject_to_bpmn(request, systemId, processId):
     post_data = dict(request.POST.lists())
-    print(post_data)
+    print(post_data,"HERE")
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename={date}-{name}-report.xlsx'.format(
+        date=datetime.now().strftime('%Y-%m-%d'),
+        name=Process.objects.get(pk=processId).name.replace(" ", "_")
+    )
+    workbook = Workbook()
+
+    # Get active worksheet/tab
+    worksheet = workbook.active
+
+    worksheet.title = 'Registro_del_trattamento'
+    columns = ['Data', 'Task', 'Actor']
+    row_num = 1
+
+    # Assign the titles for each cell of the header
+    for col_num, column_title in enumerate(columns, 1):
+        cell = worksheet.cell(row=row_num, column=col_num)
+        cell.value = column_title
+        cell.font = Font(name="Times New Roman", size=12, bold=True, color='FF0000')
+        cell.border = Border(left=Side(border_style="thin", color='FF000000'),
+                             right=Side(border_style="thin", color='FF000000'),
+                             top=Side(border_style="thin", color='FF000000'),
+                             bottom=Side(border_style="thin", color='FF000000'), )
+    asset_type = Asset_type.objects.get(name="DataObject")
+    assets = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type)
+
+    task_use_data = []
+    data = []
+
+    for data_name, task_data in dict(request.POST).items():
+        print(data_name, task_data, "HERE")
+        if (data_name != "csrfmiddlewaretoken"):
+            row_num += 1
+            taskFin = ""
+            for x in task_data:
+                print(x)
+                taskFin = taskFin+x+" "
+
+            print(taskFin)
+            print(data_name, task_data, "HERE")
+            row = [
+                data_name,
+                taskFin,
+                "Municipality"
+
+
+            ]
+            print(row)
+
+        # Define the data for each cell in the row
+
+
+        # Assign the data for each cell of the row
+        for col_num, cell_value in enumerate(row, 1):
+            cell = worksheet.cell(row=row_num, column=col_num)
+            cell.value = cell_value
+            cell.font = Font(name="Times New Roman", size=11, bold=False, color='FF000000')
+            cell.border = Border(left=Side(border_style="thin", color='FF000000'),
+                                 right=Side(border_style="thin", color='FF000000'),
+                                 top=Side(border_style="thin", color='FF000000'),
+                                 bottom=Side(border_style="thin", color='FF000000'), )
+
+        count_attr = 0
+        old_row = row_num
+    dims = {}
+    for row in worksheet.rows:
+        for cell in row:
+            if cell.value:
+                dims[cell.column_letter] = max((dims.get(cell.column_letter, 0), len(str(cell.value))))
+    for col, value in dims.items():
+        worksheet.column_dimensions[col].width = value
+
+
+
+
+    workbook.save(response)
+    return response
+
 
     return redirect('process_view_task_type', systemId, processId)
 
@@ -1599,44 +1793,109 @@ def save_dataobject(request, systemId, processId):
     list_data = []
     task_with_data = []
     post_data = dict(request.POST.lists())
+    #print(dict(request.POST))
     temp = []
+
 
     for tmp in post_data:
         temp.append(tmp)
-    #print(temp)
+    #print(temp,"VEDI QUA")
     #print(len(lista), "json")
     for dato in range(len(lista),len(post_data)-1):
         dataref = "DataObjectReference_" + get_random_string(7)
         asset_type = Asset_type.objects.get(name="DataObject")
-
-        asset = Asset(name=temp[dato], bpmn_id=dataref, position="",
+        dataobj_id = "DataObject_" + get_random_string(7)
+        print(dict(request.POST).items(),"VEDI QUA")
+        asset = Asset(name=temp[dato], bpmn_id=dataref+":"+dataobj_id, position="",
                       process=Process.objects.get(pk=processId), asset_type=asset_type)
         asset.save()
+    for data_name, attributes_data in dict(request.POST).items():
+        print(data_name, attributes_data, "HERE")
+        if (data_name != "csrfmiddlewaretoken"):
+
+            dataobj_attribute = DataObjectAttribute(
+                size=int(attributes_data[0]),
+                order_of_size=attributes_data[1],
+                personal=attributes_data[2],
+                load_dependece=int(attributes_data[3])
+            )
+            if len(attributes_data)>4:
+                actor = Actor.objects.filter(name=attributes_data[4],process=Process.objects.get(pk=pk)).first()
+                asset = Asset.objects.filter(name=data_name,process=Process.objects.get(pk=pk)).first()
+                Actor_manage_Data(actor=actor, data=asset,process=Process.objects.get(pk=pk)).save()
+            dataobj_attribute.save()
+            print(dataobj_attribute)
+            asset_id = Asset.objects.filter(name=data_name,process_id=processId).first()
+            print(asset_id,"HERE")
+            asset_has_data = Asset_has_DataObject_attribute(asset_id=asset_id.id,asset_type_id=9,
+                                                            data_object_attribute_id=dataobj_attribute.id)
+            asset_has_data.save()
     for tuple in lista2:
         for dizionario in tuple:
             if type(dizionario) is dict:
                 if dizionario['type'].lower().endswith("task"):
                     try:
-                        if dizionario['dataOutputAssociation']["id"] != "":
-                            key = dizionario['dataOutputAssociation']["targetRef"]
-                            # data_name=Asset.objects.filter(bpmn_id=key)
-                            for tuple2 in lista2:
-                                for dizionario2 in tuple2:
-                                    if type(dizionario2) is dict:
-                                        # print(dizionario2["id"], dizionario["targetRef"]["targetRef"])
-                                        if dizionario2['id'] == key:
-                                            keydata = dizionario2["node_name"]
-                                            print(keydata)
-                                            task_with_data.append(
-                                                {"task": dizionario["node_name"], "data": dizionario2["node_name"]})
+                        print(dizionario['dataOutputAssociation'])
+                        for dataOut in dizionario['dataOutputAssociation']:
+                            print(dataOut,"dataout")
+                            if dataOut["id"] != "":
+                                key = dataOut["targetRef"]
+                                # data_name=Asset.objects.filter(bpmn_id=key)
+                                for tuple2 in lista2:
+                                    for dizionario2 in tuple2:
+                                        if type(dizionario2) is dict:
+                                            # print(dizionario2["id"], dizionario["targetRef"]["targetRef"])
+                                            if dizionario2['id'] == key:
+                                                keydata = dizionario2["node_name"]
+                                                print(keydata)
+                                                task_with_data.append(
+                                                    {"task": dizionario["node_name"], "data": dizionario2["node_name"]})
+
                     except KeyError:
                         print()
 
     for data in list_data:
-        print(data)
+        print(data,"LISTTTT")
 
 
     list_data = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
     list_task = Asset.objects.filter(process=Process.objects.get(pk=processId)).exclude(asset_type=9)
+    print(list_data,list_task,task_with_data)
     return render(request, 'process_dataobject_enrichment.html',
                   {"systemId": systemId, "processId": processId, "list_data": list_data,"list_task":list_task,"task_with_data":task_with_data})
+
+
+def report_processing_activities(request,systemId):
+    processes = Process.objects.filter(system=systemId)
+    asset_type = Asset_type.objects.get(name="DataObject")
+    list_data = []
+    process_dataoutput = {}
+    list_task_result = []
+    for process in processes:
+        list_task_result = []
+        list_data = []
+        process_dataoutput[process.id] = {}
+
+        list_task = Asset.objects.filter(process=process).exclude(asset_type=9)
+        for task in list_task:
+            task_datas = Task_manages_Data.objects.filter(task=task)
+            print(task_datas,"CHECK HERE")
+
+            for task_data in task_datas:
+                print(task_data.data)
+
+                asset = Asset.objects.filter(name=task_data.data).first()
+                print(Asset_has_DataObject_attribute.objects.filter(asset=asset))
+                if Asset_has_DataObject_attribute.objects.filter(asset=asset).first() is not None:
+                    if Asset_has_DataObject_attribute.objects.filter(asset=asset).first().data_object_attribute.personal == "1":
+                        if task_data.data not in list_data:
+                            list_data.append(task_data.data)
+                        list_task_result.append(task_data.task)
+
+        list_actors = Actor.objects.filter(process=process)
+        process_dataoutput[process.id]["dataobjects"] = list_data
+        process_dataoutput[process.id]["task_list"] = list_task_result
+        process_dataoutput[process.id]["actors"] = list_actors
+
+    return render(request, 'records_of_processing_activities.html',
+                  {"systemId": systemId, "process_dataoutput":process_dataoutput})
