@@ -134,8 +134,12 @@ class BpmnDiagramGraph(object):
         tmp_nodes = self.diagram_graph.nodes(True)
         nodes = []
         for node in tmp_nodes:
-            if node[1][consts.Consts.process] == process_id:
-                nodes.append(node)
+            print("nodoprova",node)
+            try:
+                if node[1][consts.Consts.process] == process_id:
+                    nodes.append(node)
+            except:
+                print()
         return nodes
 
     def get_node_by_id(self, node_id):

@@ -37,12 +37,10 @@
             <button id="back" type="submit" class="btn btn-primary">Export as a CSV file</button>
         </form>
 
-        {% if result_available == True %}
-        <form method="POST" action="{% url 'risk_analysis_result' systemId=systemId processId=processId %}">
+        <form method="POST" action="{% url 'threat_agent_wizard' systemId=systemId processId=processId %}">
             {% csrf_token %}
             <button id="back2" type="submit" class="btn btn-primary">Show Risk Analysis Overall Result</button>
         </form>
-        {% endif %}
 
     </div>
 
@@ -54,7 +52,6 @@
                 <th style="text-align: center">Asset attributes</th>
                 <th style="text-align: center">Threats</th>
                 <th style="text-align: center">Policy per asset</th>
-                <th style="text-align: center">Risk Rating</th>
 
             </tr>
             </thead>
@@ -132,28 +129,12 @@
                         </ul>
                     </td>
 
-                <td style="text-align:center; vertical-align: middle;">
-
-                    <form method="POST" action="{% url 'threat_agent_wizard' systemId=systemId processId=processId assetId=info.0.id  %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary">Select the Asset</button>
-                    </form>
-                </td>
-
-
-
                 </tr>
             {% endfor %}
 
             </tbody>
 
         </table>
-
-
-
-
-
-
 
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

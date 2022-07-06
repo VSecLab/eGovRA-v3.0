@@ -44,8 +44,6 @@ class Actor(models.Model):
     process_bpmn_id = models.CharField(max_length=100,null=True)
 
 
-
-
 class Asset_type(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=500)

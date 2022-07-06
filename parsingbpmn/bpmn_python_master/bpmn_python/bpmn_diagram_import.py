@@ -222,8 +222,11 @@ class BpmnDiagramGraphImport(object):
                 or tag_name == consts.Consts.business_rule_task:
             BpmnDiagramGraphImport.import_task_to_graph(diagram_graph, process_id, process_attributes, element,plane_element)
         elif tag_name == consts.Consts.subprocess:
-            BpmnDiagramGraphImport.import_subprocess_to_graph(diagram_graph, sequence_flows, process_id,
+            try:
+                BpmnDiagramGraphImport.import_subprocess_to_graph(diagram_graph, sequence_flows, process_id,
                                                               process_attributes, element)
+            except:
+                print()
         elif tag_name == consts.Consts.data_object:
             BpmnDiagramGraphImport.import_data_object_to_graph(diagram_graph, process_id, process_attributes, element)
         elif tag_name == consts.Consts.inclusive_gateway or tag_name == consts.Consts.exclusive_gateway:
@@ -1025,13 +1028,15 @@ class BpmnDiagramGraphImport(object):
             node = diagram_graph.nodes[element_id]
             node[consts.Consts.width] = bounds.getAttribute(consts.Consts.width)
             node[consts.Consts.height] = bounds.getAttribute(consts.Consts.height)
-
-            if node[consts.Consts.type] == consts.Consts.subprocess:
-                node[consts.Consts.is_expanded] = \
-                    shape_element.getAttribute(consts.Consts.is_expanded) \
-                        if shape_element.hasAttribute(consts.Consts.is_expanded) else "false"
-            node[consts.Consts.x] = bounds.getAttribute(consts.Consts.x)
-            node[consts.Consts.y] = bounds.getAttribute(consts.Consts.y)
+            try:
+                if node[consts.Consts.type] == consts.Consts.subprocess:
+                    node[consts.Consts.is_expanded] = \
+                        shape_element.getAttribute(consts.Consts.is_expanded) \
+                            if shape_element.hasAttribute(consts.Consts.is_expanded) else "false"
+                node[consts.Consts.x] = bounds.getAttribute(consts.Consts.x)
+                node[consts.Consts.y] = bounds.getAttribute(consts.Consts.y)
+            except:
+                print()
         if element_id in participants_dict:
             # BPMNShape is either connected with FlowNode or Participant
             participant_attr = participants_dict[element_id]

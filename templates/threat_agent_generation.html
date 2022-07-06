@@ -22,7 +22,7 @@
 </style>
 
 <div class=container>
-    <form method="POST" action="{% url 'calculate_threat_agent_risks' systemId=systemId processId=processId assetId=assetId %}">
+    <form method="POST" action="{% url 'calculate_threat_agent_risks' systemId=systemId processId=processId%}">
     {% csrf_token %}
 
     <div class="container">

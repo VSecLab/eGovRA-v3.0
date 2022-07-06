@@ -44,8 +44,10 @@ def bpmn_process_management(request, systemId):
     pk = systemId
     asset_type = None
     if request.method == 'POST':
+        print(request.FILES)
         form = ProcessForm(request.POST, request.FILES)
         if form.is_valid():
+            print(form)
             saved_form = form.save(commit=False)
             saved_form.system_id = pk
             saved_form.save()
@@ -105,129 +107,130 @@ def bpmn_process_management(request, systemId):
             for tuple in lista:
                 for dizionario in tuple:
                     if type(dizionario) is dict:
-                        print(dizionario,"QUA")
-                        if dizionario['type'].lower().endswith("task"):
-                            attribute_value = []
-                            id_task = dizionario['id']
-                            x = dizionario["x"]
-                            y = dizionario["y"]
-                            width = dizionario["width"]
-                            height = dizionario["height"]
-                            process_id_bpmn=dizionario['process']
-                            #dataOutput = dizionario["dataOutputAssociation"]["id"]
-                            #target_refOutput = dizionario["dataOutputAssociation"]["targetRef"]
-
-                            # print(dataOutput)
-                            asset_type = None
-                            position = x + ":" + y + ":" + width + ":" + height
-                            if dizionario['type'].startswith("send"):
-                                asset_type = Asset_type.objects.get(name="Send task")
-                                e = ""
-                                for assoc in associations:
-                                    if (id_task == assoc['association'][1]):
-                                        target_ref = assoc['association'][2]
-                                        for textAnn in annotations:
-                                            if (target_ref == textAnn['id']):
-                                                e = (textAnn['text'])
-                                    e = e.replace(" ", "_")
-                                    e = e.lower()
-                                if e == "pec_communication":
-                                    attribute_value.append(Attribute_value.objects.get(value="PEC communication"))
-                                elif e == "mail_communication":
-                                    attribute_value.append(Attribute_value.objects.get(value="Mail communication"))
-                                elif e == "post_office_communication":
-                                    attribute_value.append(
-                                        Attribute_value.objects.get(value="Post office communication"))
-                            elif dizionario['type'].startswith("receive"):
-                                asset_type = Asset_type.objects.get(name="Receive task")
+                        try:
+                            if dizionario['type'].lower().endswith("task"):
+                                attribute_value = []
                                 id_task = dizionario['id']
-                                e = ""
-                                for assoc in associations:
-                                    if (id_task == assoc['association'][1]):
-                                        target_ref = assoc['association'][2]
-                                        for textAnn in annotations:
-                                            if (target_ref == textAnn['id']):
-                                                e = (textAnn['text'])
-                                    e = e.replace(" ", "_")
-                                    e = e.lower()
-                                if e == "pec_communication":
-                                    attribute_value.append(Attribute_value.objects.get(value="PEC communication"))
-                                elif e == "mail_communication":
-                                    attribute_value.append(Attribute_value.objects.get(value="Mail communication"))
-                                elif e == "post_office_communication":
-                                    attribute_value.append(
-                                        Attribute_value.objects.get(value="Post office communication"))
-                            elif dizionario['type'].startswith("user"):
-                                asset_type = Asset_type.objects.get(name="User task")
-                                id_task = dizionario['id']
-                                e = ""
-                                for assoc in associations:
-                                    if (id_task == assoc['association'][1]):
-                                        target_ref = assoc['association'][2]
-                                        for textAnn in annotations:
-                                            if (target_ref == textAnn['id']):
-                                                e = (textAnn['text'])
-                                    e = e.replace(" ", "_")
-                                    e = e.lower()
-                                if e == "online":
-                                    attribute_value.append(Attribute_value.objects.get(value="Online"))
-                                elif e == "offline":
-                                    attribute_value.append(Attribute_value.objects.get(value="Offline"))
-                            elif dizionario['type'].startswith("manual"):
-                                asset_type = Asset_type.objects.get(name="Manual task")
-                                attribute_value.append(Attribute_value.objects.get(value="Manual task"))
-                            elif dizionario['type'].startswith("service"):
-                                asset_type = Asset_type.objects.get(name="Service task")
-                                id_task = dizionario['id']
-                                e = ""
-                                for assoc in associations:
-                                    if (id_task == assoc['association'][1]):
-                                        target_ref = assoc['association'][2]
-                                        for textAnn in annotations:
-                                            if (target_ref == textAnn['id']):
-                                                e = (textAnn['text'])
-                                    e = e.replace(" ", "_")
-                                e = e.lower()
-                                if e == "statefull":
-                                    attribute_value.append(Attribute_value.objects.get(value="Statefull"))
-                                elif e == "stateless":
-                                    attribute_value.append(Attribute_value.objects.get(value="Stateless"))
-                            elif dizionario['type'].startswith("script"):
-                                asset_type = Asset_type.objects.get(name="Script task")
-                                attribute_value.append(Attribute_value.objects.get(value="Script task"))
-                            elif dizionario['type'].startswith("business"):
-                                asset_type = Asset_type.objects.get(name="Business rule task")
-                                attribute_value.append(Attribute_value.objects.get(value="Business rule task"))
-                            asset = Asset(name=dizionario['node_name'], bpmn_id=id_task, position=position,
-                                          process=Process.objects.get(pk=pk), asset_type=asset_type,process_bpmn_id=process_id_bpmn)
-                            asset.save()
-                            attribute = []
-                            for value in attribute_value:
-                                attribute.append(Attribute.objects.get(asset_type=asset_type, attribute_value=value))
-                            for a in attribute:
-                                asset_has_attribute = Asset_has_attribute(asset=asset, attribute=a)
-                                asset_has_attribute.save()
-                        elif dizionario['type'].endswith("task"):
-                            asset = Asset(name=dizionario['node_name'], process=Process.objects.get(pk=pk))
-                            asset.save()
-                        elif dizionario['type'].lower().startswith("dataobjectreference"):
-                            asset_type = Asset_type.objects.get(name="DataObject")
-                            try:
                                 x = dizionario["x"]
                                 y = dizionario["y"]
                                 width = dizionario["width"]
                                 height = dizionario["height"]
+                                process_id_bpmn=dizionario['process']
+                                #dataOutput = dizionario["dataOutputAssociation"]["id"]
+                                #target_refOutput = dizionario["dataOutputAssociation"]["targetRef"]
+
+                                # print(dataOutput)
+                                asset_type = None
                                 position = x + ":" + y + ":" + width + ":" + height
-                                process_id_bpmn = dizionario['process']
+                                if dizionario['type'].startswith("send"):
+                                    asset_type = Asset_type.objects.get(name="Send task")
+                                    e = ""
+                                    for assoc in associations:
+                                        if (id_task == assoc['association'][1]):
+                                            target_ref = assoc['association'][2]
+                                            for textAnn in annotations:
+                                                if (target_ref == textAnn['id']):
+                                                    e = (textAnn['text'])
+                                        e = e.replace(" ", "_")
+                                        e = e.lower()
+                                    if e == "pec_communication":
+                                        attribute_value.append(Attribute_value.objects.get(value="PEC communication"))
+                                    elif e == "mail_communication":
+                                        attribute_value.append(Attribute_value.objects.get(value="Mail communication"))
+                                    elif e == "post_office_communication":
+                                        attribute_value.append(
+                                            Attribute_value.objects.get(value="Post office communication"))
+                                elif dizionario['type'].startswith("receive"):
+                                    asset_type = Asset_type.objects.get(name="Receive task")
+                                    id_task = dizionario['id']
+                                    e = ""
+                                    for assoc in associations:
+                                        if (id_task == assoc['association'][1]):
+                                            target_ref = assoc['association'][2]
+                                            for textAnn in annotations:
+                                                if (target_ref == textAnn['id']):
+                                                    e = (textAnn['text'])
+                                        e = e.replace(" ", "_")
+                                        e = e.lower()
+                                    if e == "pec_communication":
+                                        attribute_value.append(Attribute_value.objects.get(value="PEC communication"))
+                                    elif e == "mail_communication":
+                                        attribute_value.append(Attribute_value.objects.get(value="Mail communication"))
+                                    elif e == "post_office_communication":
+                                        attribute_value.append(
+                                            Attribute_value.objects.get(value="Post office communication"))
+                                elif dizionario['type'].startswith("user"):
+                                    asset_type = Asset_type.objects.get(name="User task")
+                                    id_task = dizionario['id']
+                                    e = ""
+                                    for assoc in associations:
+                                        if (id_task == assoc['association'][1]):
+                                            target_ref = assoc['association'][2]
+                                            for textAnn in annotations:
+                                                if (target_ref == textAnn['id']):
+                                                    e = (textAnn['text'])
+                                        e = e.replace(" ", "_")
+                                        e = e.lower()
+                                    if e == "online":
+                                        attribute_value.append(Attribute_value.objects.get(value="Online"))
+                                    elif e == "offline":
+                                        attribute_value.append(Attribute_value.objects.get(value="Offline"))
+                                elif dizionario['type'].startswith("manual"):
+                                    asset_type = Asset_type.objects.get(name="Manual task")
+                                    attribute_value.append(Attribute_value.objects.get(value="Manual task"))
+                                elif dizionario['type'].startswith("service"):
+                                    asset_type = Asset_type.objects.get(name="Service task")
+                                    id_task = dizionario['id']
+                                    e = ""
+                                    for assoc in associations:
+                                        if (id_task == assoc['association'][1]):
+                                            target_ref = assoc['association'][2]
+                                            for textAnn in annotations:
+                                                if (target_ref == textAnn['id']):
+                                                    e = (textAnn['text'])
+                                        e = e.replace(" ", "_")
+                                    e = e.lower()
+                                    if e == "statefull":
+                                        attribute_value.append(Attribute_value.objects.get(value="Statefull"))
+                                    elif e == "stateless":
+                                        attribute_value.append(Attribute_value.objects.get(value="Stateless"))
+                                elif dizionario['type'].startswith("script"):
+                                    asset_type = Asset_type.objects.get(name="Script task")
+                                    attribute_value.append(Attribute_value.objects.get(value="Script task"))
+                                elif dizionario['type'].startswith("business"):
+                                    asset_type = Asset_type.objects.get(name="Business rule task")
+                                    attribute_value.append(Attribute_value.objects.get(value="Business rule task"))
+                                asset = Asset(name=dizionario['node_name'], bpmn_id=id_task, position=position,
+                                              process=Process.objects.get(pk=pk), asset_type=asset_type,process_bpmn_id=process_id_bpmn)
+                                asset.save()
+                                attribute = []
+                                for value in attribute_value:
+                                    attribute.append(Attribute.objects.get(asset_type=asset_type, attribute_value=value))
+                                for a in attribute:
+                                    asset_has_attribute = Asset_has_attribute(asset=asset, attribute=a)
+                                    asset_has_attribute.save()
+                            elif dizionario['type'].endswith("task"):
+                                asset = Asset(name=dizionario['node_name'], process=Process.objects.get(pk=pk))
+                                asset.save()
+                            elif dizionario['type'].lower().startswith("dataobjectreference"):
+                                asset_type = Asset_type.objects.get(name="DataObject")
+                                try:
+                                    x = dizionario["x"]
+                                    y = dizionario["y"]
+                                    width = dizionario["width"]
+                                    height = dizionario["height"]
+                                    position = x + ":" + y + ":" + width + ":" + height
+                                    process_id_bpmn = dizionario['process']
 
-                            except KeyError:
-                                print()
-                            asset = Asset(name=dizionario['node_name'], bpmn_id=dizionario["id"]+ ":" + dizionario["dataObjectRef"], position=position,
-                                          process=Process.objects.get(pk=pk), asset_type=asset_type,process_bpmn_id=process_id_bpmn)
-                            asset.save()
-                            actor = Actor.objects.filter(process_bpmn_id=process_id_bpmn).first()
-                            Actor_manage_Data(actor=actor, data=asset,process=Process.objects.get(pk=pk)).save()
-
+                                except KeyError:
+                                    print()
+                                asset = Asset(name=dizionario['node_name'], bpmn_id=dizionario["id"]+ ":" + dizionario["dataObjectRef"], position=position,
+                                              process=Process.objects.get(pk=pk), asset_type=asset_type,process_bpmn_id=process_id_bpmn)
+                                asset.save()
+                                actor = Actor.objects.filter(process_bpmn_id=process_id_bpmn).first()
+                                Actor_manage_Data(actor=actor, data=asset,process=Process.objects.get(pk=pk)).save()
+                        except:
+                            print("BPMN ERROR")
 
             return redirect('process_data_object_input', systemId, pk)
     else:
@@ -359,7 +362,7 @@ def process_enrichment(request, systemId, processId):
     pathBPMN=""
     if request.method == "POST":
         pk = processId
-        task_list = Asset.objects.filter(process=Process.objects.get(pk=pk))
+        task_list = Asset.objects.filter(process=Process.objects.get(pk=pk)).exclude(asset_type=9)
         pathfile = Process.objects.filter(id=pk)[0].xml
         pathBPMN, filename = os.path.split(str(pathfile))
         pathBPMN=pathBPMN+"/"
@@ -384,6 +387,8 @@ def process_enrichment(request, systemId, processId):
 
             for asset, attribute in zip(assets_for_process, attributes):
                 if attribute != None:
+                    asset_has_attribute = Asset_has_attribute(asset=asset, attribute=attribute)
+                    asset_has_attribute.save()
                     array_position=asset.position.split(":")
                     x=array_position[0]
                     y=array_position[1]
@@ -455,7 +460,8 @@ def edit_process(request, systemId, processId):
 
 def threats_and_controls(request, systemId, processId):
     process = Process.objects.get(pk=processId)
-    assets = Asset.objects.filter(process=process)
+    assets = Asset.objects.filter(process=process).exclude(asset_type=9)
+    print(request.POST)
     attributes = []
     threats = []
     controls = []
@@ -465,6 +471,7 @@ def threats_and_controls(request, systemId, processId):
         for attribute in list_attribute:
             attribute = attribute.attribute
             threats.append(Threat_has_attribute.objects.filter(attribute=attribute))
+    print(threats,"THREATS")
     for threats_of_asset in threats:
         sublist_controls = []
         for threat in threats_of_asset:
@@ -484,7 +491,7 @@ def threats_and_controls(request, systemId, processId):
             for control in control_of_threat:
                 if control.control not in clear_list_controls:
                     clear_list_controls.append(control.control)
-
+    print(clear_list_controls,clear_list_threats,"LISTE DI THREAT E CONTROL")
     system = Process.objects.get(pk=processId).system
     processes = Process.objects.filter(system=system)
     return render(request, 'threats_and_controls.html', {
@@ -495,7 +502,7 @@ def threats_and_controls(request, systemId, processId):
 
 
 def threat_modeling(systemId, processId):
-    assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
+    assets = Asset.objects.filter(process=Process.objects.get(pk=processId)).exclude(asset_type=9)
     attributes = []
     threats = []
     controls = []
@@ -534,7 +541,7 @@ def threat_modeling(systemId, processId):
 
 
 def threat_modeling_results(systemId, processId):
-    assets = Asset.objects.filter(process=Process.objects.get(pk=processId))
+    assets = Asset.objects.filter(process=Process.objects.get(pk=processId)).exclude(asset_type=9)
     attributes = []
     threats = []
     controls = []
@@ -682,11 +689,17 @@ def export_threat_modeling(request, systemId, processId):
             else:
                 threat0 = str(threat[0])
 
+            if not attribute:
+                attribute = ''
+            else:
+                attribute = str(attribute[0])
+
+
             # Define the data for each cell in the row
             row = [
                 asset.name,
                 asset.asset_type.name,
-                str(attribute[0]),
+                str(attribute),
                 threat0,
                 "CIS." + str(control[0].pk) + " - " + str(control[0])
             ]
@@ -1064,7 +1077,7 @@ def risk_analysis(request, systemId, processId, assetId):
 
 
 @csrf_exempt
-def threat_agent_wizard(request, systemId, processId, assetId):
+def threat_agent_wizard(request, systemId, processId):
     context = {}
     # Generate question and related replies
     questions = ThreatAgentQuestion.objects.all()
@@ -1082,11 +1095,10 @@ def threat_agent_wizard(request, systemId, processId, assetId):
     context['questions_replies'] = questions_replies_list
     context['systemId'] = systemId
     context['processId'] = processId
-    context['assetId'] = assetId
 
     try:
         if ThreatAgentRiskScores.objects.get(system=System.objects.get(id=systemId)):
-            return redirect('StrideImpact', systemId, processId, assetId)
+            return redirect('StrideImpact_Result', systemId, processId)
     except:
         pass
     return render(request, 'threat_agent_wizard.html', context)
@@ -1134,9 +1146,8 @@ def calculate_severity_per_stride(risk_per_stride):
 
 
 @csrf_exempt
-def threat_agent_generation(request, systemId, processId, assetId):
+def threat_agent_generation(request, systemId, processId):
     context = {}
-
     ThreatAgents = []
     ThreatAgentsPerAsset = []
     # for category in ThreatAgentCategory.objects.all():   #inizializzo la lista finale a tutti i TA
@@ -1144,12 +1155,12 @@ def threat_agent_generation(request, systemId, processId, assetId):
     for reply in request.POST:  # per ogni risposta al questionario
         if (reply != 'csrfmiddlewaretoken'):
             ReplyObject = Reply.objects.filter(reply=reply).get()
-            question = TAReplies_Question.objects.filter(reply=ReplyObject)
             tareplycategories = TAReplyCategory.objects.filter(reply=ReplyObject)
             TAList = []
             for replycategory in tareplycategories.all():  # ogni categoria relativa ad una singola risposta
                 # print(replycategory.reply.reply + " "+ replycategory.category.category)
                 TAList.append(replycategory.category)
+                question = TAReplies_Question.objects.filter(reply=ReplyObject)
             ThreatAgentsPerAsset.append((TAList, question))
     numQ3 = 0
     numQ4 = 0
@@ -1202,7 +1213,6 @@ def threat_agent_generation(request, systemId, processId, assetId):
     context = {'ThreatAgents': ThreatAgentsWithInfo}
     context['systemId'] = systemId
     context['processId'] = processId
-    context['assetId'] = assetId
     return render(request, 'threat_agent_generation.html', context=context)
 
 
@@ -1217,7 +1227,7 @@ def union(lst1, lst2):
 
 
 @csrf_exempt
-def calculate_threat_agent_risks(request, systemId, processId, assetId):
+def calculate_threat_agent_risks(request, systemId, processId):
     OWASP_Motive_TOT = 0
     OWASP_Size_TOT = 0
     OWASP_Opportunity_TOT = 0
@@ -1292,18 +1302,15 @@ def calculate_threat_agent_risks(request, systemId, processId, assetId):
             opportunity=OWASP_Opportunity_TOT)
 
     if (StrideImpactRecord.objects.filter(process=Process.objects.get(id=processId))):
-        return redirect('risk_analysis', systemId, processId, assetId)
-
-    if (assetId is None):
-        return redirect('risk_analysis_results', systemId, processId, assetId)
+        return redirect('risk_analysis', systemId, processId)
 
     return render(request, 'stride_impact_evaluation.html',
-                  {"systemId": systemId, 'processId': processId, "assetId": assetId})
+                  {"systemId": systemId, 'processId': processId})
 
 
 def StrideImpact(request, systemId, processId, assetId):
     if (StrideImpactRecord.objects.filter(process=Process.objects.get(id=processId))):
-        return redirect('risk_analysis', systemId, processId, assetId)
+        return redirect('risk_analysis', systemId, processId)
     return render(request, 'stride_impact_evaluation.html',
                   {"systemId": systemId, 'processId': processId, "assetId": assetId})
 
@@ -1320,12 +1327,11 @@ def risk_analysis_result(request, systemId, processId):
     system = System.objects.filter(id=systemId).first()
     process = Process.objects.filter(id=processId).first()
     assets = Asset.objects.filter(process=process)
-
-    if (not ThreatAgentRiskScores.objects.get(system=System.objects.get(id=systemId))):
-        return redirect('threat_agent_wizard', systemId, processId, assets[0].id)
-
-    if (not StrideImpactRecord.objects.filter(process=Process.objects.get(id=processId))):
-        return redirect('StrideImpact_Result', systemId, processId)
+    try:
+        if (not ThreatAgentRiskScores.objects.get(system=System.objects.get(id=systemId))):
+            return redirect('threat_agent_wizard', systemId, processId)
+    except:
+        pass
 
     SpoofingRisks = []
     TamperingRisks = []
@@ -1644,6 +1650,9 @@ def task_manage_data(request,systemId,processId):
             x1, y1, id_dataobjectref1 = bpmn_graph.add_dataObject_with_Association_to_diagram(manually_added_single_data.process_bpmn_id,
                                                                                               manually_added_single_data.name, x,
                                                                                               y)
+
+
+
             for task_manage_data_createassoc in tasks_manage_data:
                 print(task_manage_data_createassoc.task.bpmn_id,"here")
                 bpmn_graph.add_dataOutput_to_diagram(task_manage_data_createassoc.task.bpmn_id,x,y,id_dataobjectref1, None)
@@ -1693,7 +1702,91 @@ def task_manage_data(request,systemId,processId):
 
     return redirect('process_view_task_type', systemId, processId)
 
-def export_dataobject_to_bpmn(request, systemId, processId):
+def export_dataobject_to_bpmn(request, systemId):
+    processes = Process.objects.filter(system=systemId)
+    print(processes,"PROCESSESSS")
+    asset_type = Asset_type.objects.get(name="DataObject")
+    list_data = []
+    process_dataoutput = {}
+    list_task_result = []
+    attributes = []
+    threats = []
+    controls = []
+    clear_list_threats = []
+    clear_list_controls = []
+    for process in processes:
+        print(process)
+
+        assets = Asset.objects.filter(process=process).exclude(asset_type=9)
+        print(assets, "OEOEOEOEEOs")
+        print(request.POST)
+
+        for asset in assets:
+            attributes.append(Asset_has_attribute.objects.filter(asset=asset))
+        for list_attribute in attributes:
+            for attribute in list_attribute:
+                attribute = attribute.attribute
+                threats.append(Threat_has_attribute.objects.filter(attribute=attribute))
+        print(threats, "THREATS")
+        for threats_of_asset in threats:
+            sublist_controls = []
+            for threat in threats_of_asset:
+                threat = threat.threat
+                sublist_controls.append(Threat_has_control.objects.filter(threat=threat))
+            controls.append(sublist_controls)
+
+        for threat_list in threats:
+            for threat in threat_list:
+                if threat.threat not in clear_list_threats:
+                    clear_list_threats.append(threat.threat)
+
+        for control_of_asset in controls:
+            for control_of_threat in control_of_asset:
+                for control in control_of_threat:
+                    if control.control not in clear_list_controls:
+                        clear_list_controls.append(control.control)
+
+        list_task_result = []
+        list_data = []
+        process_dataoutput[process.id] = {}
+
+        list_task = Asset.objects.filter(process=process).exclude(asset_type=9)
+        for task in list_task:
+            task_datas = Task_manages_Data.objects.filter(task=task)
+            print(task_datas, "CHECK HERE")
+
+            for task_data in task_datas:
+                print(task_data.data)
+
+                asset = Asset.objects.filter(name=task_data.data).first()
+                print(Asset_has_DataObject_attribute.objects.filter(asset=asset))
+                if Asset_has_DataObject_attribute.objects.filter(asset=asset).first() is not None:
+                    if Asset_has_DataObject_attribute.objects.filter(
+                            asset=asset).first().data_object_attribute.personal == "1":
+                        if task_data.data not in list_data:
+                            list_data.append(task_data.data.name)
+                        list_task_result.append(task_data.task.name)
+
+        list_actors = Actor.objects.filter(process=process)
+        list_actors_name = ""
+        list_data_name = ""
+        list_task_name = ""
+        list_control = ""
+        for actor in list_actors:
+            list_actors_name += actor.name+"\n"
+        for task_name in list_task_result:
+            list_task_name += task_name+"\n"
+        for data_name in list_data:
+            list_data_name += data_name+"\n"
+        for control in clear_list_controls:
+            list_control += control.name+"\n"
+
+        print(list_actors_name)
+        process_dataoutput[process.id]["dataobjects"] = list_data_name
+        process_dataoutput[process.id]["task_list"] = list_task_name
+        process_dataoutput[process.id]["actors"] = list_actors_name
+        process_dataoutput[process.id]["controls"] = list_control
+
     post_data = dict(request.POST.lists())
     print(post_data,"HERE")
     response = HttpResponse(
@@ -1701,7 +1794,7 @@ def export_dataobject_to_bpmn(request, systemId, processId):
     )
     response['Content-Disposition'] = 'attachment; filename={date}-{name}-report.xlsx'.format(
         date=datetime.now().strftime('%Y-%m-%d'),
-        name=Process.objects.get(pk=processId).name.replace(" ", "_")
+        name=Process.objects.get(pk=process.id).name.replace(" ", "_")
     )
     workbook = Workbook()
 
@@ -1709,7 +1802,9 @@ def export_dataobject_to_bpmn(request, systemId, processId):
     worksheet = workbook.active
 
     worksheet.title = 'Registro_del_trattamento'
-    columns = ['Data', 'Task', 'Actor']
+    columns = ['Process code', 'Type of treatment','Purposes of the processing',
+               'Categories of interested parties',	'Categories of personal data',	'Categories of recipients',	'Transfers of personal data to a third country',
+               'Terms of erasure of personal data',	'Security Measures']
     row_num = 1
 
     # Assign the titles for each cell of the header
@@ -1721,47 +1816,44 @@ def export_dataobject_to_bpmn(request, systemId, processId):
                              right=Side(border_style="thin", color='FF000000'),
                              top=Side(border_style="thin", color='FF000000'),
                              bottom=Side(border_style="thin", color='FF000000'), )
-    asset_type = Asset_type.objects.get(name="DataObject")
-    assets = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type)
-
-    task_use_data = []
-    data = []
-
-    for data_name, task_data in dict(request.POST).items():
-        print(data_name, task_data, "HERE")
-        if (data_name != "csrfmiddlewaretoken"):
-            row_num += 1
-            taskFin = ""
-            for x in task_data:
-                print(x)
-                taskFin = taskFin+x+" "
-
-            print(taskFin)
-            print(data_name, task_data, "HERE")
-            row = [
-                data_name,
-                taskFin,
-                "Municipality"
 
 
-            ]
-            print(row)
 
-        # Define the data for each cell in the row
+    #print(data_name, task_data, "HERE")
+    #if (data_name != "csrfmiddlewaretoken"):
+
+    for process in processes:
+
+        print(process)
+        row = [
+            process.id,
+            post_data["typeTreatment"][row_num-1],
+            process_dataoutput[process.id]["task_list"],
+            process_dataoutput[process.id]["actors"],
+            process_dataoutput[process.id]["dataobjects"],
+            post_data["Recipients"][row_num-1],
+            "no",
+            post_data["erasureData"][row_num - 1],
+            process_dataoutput[process.id]["controls"]
+        ]
+        row_num += 1
 
 
-        # Assign the data for each cell of the row
-        for col_num, cell_value in enumerate(row, 1):
-            cell = worksheet.cell(row=row_num, column=col_num)
-            cell.value = cell_value
-            cell.font = Font(name="Times New Roman", size=11, bold=False, color='FF000000')
-            cell.border = Border(left=Side(border_style="thin", color='FF000000'),
-                                 right=Side(border_style="thin", color='FF000000'),
-                                 top=Side(border_style="thin", color='FF000000'),
-                                 bottom=Side(border_style="thin", color='FF000000'), )
+    # Define the data for each cell in the row
 
-        count_attr = 0
-        old_row = row_num
+
+    # Assign the data for each cell of the row
+    for col_num, cell_value in enumerate(row, 1):
+        cell = worksheet.cell(row=row_num, column=col_num)
+        cell.value = cell_value
+        cell.font = Font(name="Times New Roman", size=11, bold=False, color='FF000000')
+        cell.border = Border(left=Side(border_style="thin", color='FF000000'),
+                             right=Side(border_style="thin", color='FF000000'),
+                             top=Side(border_style="thin", color='FF000000'),
+                             bottom=Side(border_style="thin", color='FF000000'), )
+
+    count_attr = 0
+    old_row = row_num
     dims = {}
     for row in worksheet.rows:
         for cell in row:
@@ -1790,29 +1882,21 @@ def save_dataobject(request, systemId, processId):
     bpmn_graph.load_diagram_from_xml_file(Process.objects.get(pk=pk).xml)
     lista2 = bpmn_graph.get_nodes()
     lista = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
-    list_data = []
     task_with_data = []
-    post_data = dict(request.POST.lists())
-    #print(dict(request.POST))
+    post_data = dict(request.POST).items()
     temp = []
-
-
     for tmp in post_data:
         temp.append(tmp)
-    #print(temp,"VEDI QUA")
-    #print(len(lista), "json")
+    print(temp,"temp")
     for dato in range(len(lista),len(post_data)-1):
         dataref = "DataObjectReference_" + get_random_string(7)
         asset_type = Asset_type.objects.get(name="DataObject")
         dataobj_id = "DataObject_" + get_random_string(7)
-        print(dict(request.POST).items(),"VEDI QUA")
-        asset = Asset(name=temp[dato], bpmn_id=dataref+":"+dataobj_id, position="",
+        asset = Asset(name=temp[dato][0], bpmn_id=dataref+":"+dataobj_id, position="",
                       process=Process.objects.get(pk=processId), asset_type=asset_type)
         asset.save()
     for data_name, attributes_data in dict(request.POST).items():
-        print(data_name, attributes_data, "HERE")
         if (data_name != "csrfmiddlewaretoken"):
-
             dataobj_attribute = DataObjectAttribute(
                 size=int(attributes_data[0]),
                 order_of_size=attributes_data[1],
@@ -1821,41 +1905,41 @@ def save_dataobject(request, systemId, processId):
             )
             if len(attributes_data)>4:
                 actor = Actor.objects.filter(name=attributes_data[4],process=Process.objects.get(pk=pk)).first()
-                asset = Asset.objects.filter(name=data_name,process=Process.objects.get(pk=pk)).first()
+                print(data_name,Process.objects.get(pk=pk))
+                asset = Asset.objects.filter(name=data_name,process=Process.objects.get(pk=pk),asset_type=9).first()
                 Actor_manage_Data(actor=actor, data=asset,process=Process.objects.get(pk=pk)).save()
             dataobj_attribute.save()
-            print(dataobj_attribute)
             asset_id = Asset.objects.filter(name=data_name,process_id=processId).first()
-            print(asset_id,"HERE")
             asset_has_data = Asset_has_DataObject_attribute(asset_id=asset_id.id,asset_type_id=9,
                                                             data_object_attribute_id=dataobj_attribute.id)
             asset_has_data.save()
     for tuple in lista2:
         for dizionario in tuple:
             if type(dizionario) is dict:
-                if dizionario['type'].lower().endswith("task"):
-                    try:
-                        print(dizionario['dataOutputAssociation'])
-                        for dataOut in dizionario['dataOutputAssociation']:
-                            print(dataOut,"dataout")
-                            if dataOut["id"] != "":
-                                key = dataOut["targetRef"]
-                                # data_name=Asset.objects.filter(bpmn_id=key)
-                                for tuple2 in lista2:
-                                    for dizionario2 in tuple2:
-                                        if type(dizionario2) is dict:
-                                            # print(dizionario2["id"], dizionario["targetRef"]["targetRef"])
-                                            if dizionario2['id'] == key:
-                                                keydata = dizionario2["node_name"]
-                                                print(keydata)
-                                                task_with_data.append(
-                                                    {"task": dizionario["node_name"], "data": dizionario2["node_name"]})
+                try:
+                    if dizionario['type'].lower().endswith("task"):
+                        try:
+                            print(dizionario['dataOutputAssociation'])
+                            for dataOut in dizionario['dataOutputAssociation']:
+                                print(dataOut,"dataout")
+                                if dataOut["id"] != "":
+                                    key = dataOut["targetRef"]
+                                    # data_name=Asset.objects.filter(bpmn_id=key)
+                                    for tuple2 in lista2:
+                                        for dizionario2 in tuple2:
+                                            if type(dizionario2) is dict:
+                                                # print(dizionario2["id"], dizionario["targetRef"]["targetRef"])
+                                                if dizionario2['id'] == key:
+                                                    keydata = dizionario2["node_name"]
+                                                    print(keydata)
+                                                    task_with_data.append(
+                                                        {"task": dizionario["node_name"], "data": dizionario2["node_name"]})
 
-                    except KeyError:
-                        print()
+                        except KeyError:
+                            print()
+                except:
+                    print("BPMN OBJECT NOT PARSED")
 
-    for data in list_data:
-        print(data,"LISTTTT")
 
 
     list_data = Asset.objects.filter(process=Process.objects.get(pk=processId), asset_type=asset_type).exclude(name="")
@@ -1871,7 +1955,47 @@ def report_processing_activities(request,systemId):
     list_data = []
     process_dataoutput = {}
     list_task_result = []
+    attributes = []
+    threats = []
+    controls = []
+    clear_list_threats = []
+    clear_list_controls = []
     for process in processes:
+        print(process)
+
+        assets = Asset.objects.filter(process=process).exclude(asset_type=9)
+        print(assets,"OEOEOEOEEOs")
+        print(request.POST)
+
+        for asset in assets:
+            attributes.append(Asset_has_attribute.objects.filter(asset=asset))
+        for list_attribute in attributes:
+            for attribute in list_attribute:
+                attribute = attribute.attribute
+                threats.append(Threat_has_attribute.objects.filter(attribute=attribute))
+        print(threats, "THREATS")
+        for threats_of_asset in threats:
+            sublist_controls = []
+            for threat in threats_of_asset:
+                threat = threat.threat
+                sublist_controls.append(Threat_has_control.objects.filter(threat=threat))
+            controls.append(sublist_controls)
+
+
+        for threat_list in threats:
+            for threat in threat_list:
+                if threat.threat not in clear_list_threats:
+                    clear_list_threats.append(threat.threat)
+
+
+        for control_of_asset in controls:
+            for control_of_threat in control_of_asset:
+                for control in control_of_threat:
+                    if control.control not in clear_list_controls:
+                        clear_list_controls.append(control.control)
+
+
+        print(clear_list_controls,"CONREEOOOO")
         list_task_result = []
         list_data = []
         process_dataoutput[process.id] = {}
@@ -1897,5 +2021,58 @@ def report_processing_activities(request,systemId):
         process_dataoutput[process.id]["task_list"] = list_task_result
         process_dataoutput[process.id]["actors"] = list_actors
 
+
+
     return render(request, 'records_of_processing_activities.html',
-                  {"systemId": systemId, "process_dataoutput":process_dataoutput})
+                  {"systemId": systemId, "process_dataoutput":process_dataoutput,"control":clear_list_controls})
+
+def countermeasures_selection(request,systemId,processId,cisId):
+    post_data = dict(request.POST.lists())
+
+    processiD_cis = Process.objects.latest('id').id
+
+    process_cis = Process(id=processiD_cis+1,name="CIS"+str(cisId),xml="processes/cis_control/CIS_CONTROL"+str(cisId)+".bpmn",system_id=systemId)
+    process_cis.save()
+
+    process = Process.objects.get(pk=processId)
+    assets = Asset.objects.filter(process=process).exclude(asset_type=9)
+    print(request.POST)
+    attributes = []
+    threats = []
+    controls = []
+    for asset in assets:
+        attributes.append(Asset_has_attribute.objects.filter(asset=asset))
+    for list_attribute in attributes:
+        for attribute in list_attribute:
+            attribute = attribute.attribute
+            threats.append(Threat_has_attribute.objects.filter(attribute=attribute))
+    print(threats, "THREATS")
+    for threats_of_asset in threats:
+        sublist_controls = []
+        for threat in threats_of_asset:
+            threat = threat.threat
+            sublist_controls.append(Threat_has_control.objects.filter(threat=threat))
+        controls.append(sublist_controls)
+
+    clear_list_threats = []
+    for threat_list in threats:
+        for threat in threat_list:
+            if threat.threat not in clear_list_threats:
+                clear_list_threats.append(threat.threat)
+
+    clear_list_controls = []
+    for control_of_asset in controls:
+        for control_of_threat in control_of_asset:
+            for control in control_of_threat:
+                if control.control not in clear_list_controls:
+                    clear_list_controls.append(control.control)
+    print(clear_list_controls, clear_list_threats, "LISTE DI THREAT E CONTROL")
+    system = Process.objects.get(pk=processId).system
+    processes = Process.objects.filter(system=system)
+    return render(request, 'threats_and_controls.html', {
+        'process_name': process.name, 'clear_list_threats': clear_list_threats,
+        'clear_list_controls': clear_list_controls, 'systemId': systemId,
+        'processId': processId, 'processes': processes
+    })
+
+

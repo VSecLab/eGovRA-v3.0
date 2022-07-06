@@ -625,39 +625,43 @@ class BpmnDiagramGraphExport(object):
             node_id = node[0]
             params = node[1]
             #print(node,node_id,"NODI")
-            if params["type"].lower().endswith("task"):
-                try:
-                    if params[consts.Consts.dataOutputAssociation]:
-                        for singleDataOutputAssociation in params[consts.Consts.dataOutputAssociation]:
-                            BpmnDiagramGraphExport.export_Association_xml(singleDataOutputAssociation
-                                                                          ,plane, params[consts.Consts.x],params[consts.Consts.y],
-                                                                          singleDataOutputAssociation[consts.Consts.targetX],
-                                                                          singleDataOutputAssociation[consts.Consts.targetY])
-                    else:
-                        BpmnDiagramGraphExport.export_node_di_data(node_id, params, plane)
+            try:
+                if params["type"].lower().endswith("task"):
+                    try:
+                        if params[consts.Consts.dataOutputAssociation]:
+                            for singleDataOutputAssociation in params[consts.Consts.dataOutputAssociation]:
+                                BpmnDiagramGraphExport.export_Association_xml(singleDataOutputAssociation
+                                                                              ,plane, params[consts.Consts.x],params[consts.Consts.y],
+                                                                              singleDataOutputAssociation[consts.Consts.targetX],
+                                                                              singleDataOutputAssociation[consts.Consts.targetY])
+                        else:
+                            BpmnDiagramGraphExport.export_node_di_data(node_id, params, plane)
 
-                except KeyError:
-                    print()
+                    except KeyError:
+                        print()
+            except:
+                print()
+            try:
+                if params["type"] == consts.Consts.association:
+                    #verranno cambiate le posizioni dinamicamente
+                    nodes=bpmn_diagram.get_nodes_list_by_process_id(params[consts.Consts.process])
+                    taskX1="0"
+                    taskY1="0"
+                    textAnnX2="0"
+                    textAnnY2="0"
+                    for node in nodes:
+                        if(node[1]['id']==params[consts.Consts.association][1]):
+                            taskX1=node[1]['x']
+                            taskY1 = node[1]['y']
+                        if(node[1]['id']==params[consts.Consts.association][2]):
+                            textAnnX2 = node[1]['x']
+                            textAnnY2 = node[1]['y']
 
-            if params["type"] == consts.Consts.association:
-                #verranno cambiate le posizioni dinamicamente
-                nodes=bpmn_diagram.get_nodes_list_by_process_id(params[consts.Consts.process])
-                taskX1="0"
-                taskY1="0"
-                textAnnX2="0"
-                textAnnY2="0"
-                for node in nodes:
-                    if(node[1]['id']==params[consts.Consts.association][1]):
-                        taskX1=node[1]['x']
-                        taskY1 = node[1]['y']
-                    if(node[1]['id']==params[consts.Consts.association][2]):
-                        textAnnX2 = node[1]['x']
-                        textAnnY2 = node[1]['y']
-
-                BpmnDiagramGraphExport.export_Association_xml(params, plane,taskX1,taskY1,textAnnX2,textAnnY2)
-            else:
-                BpmnDiagramGraphExport.export_node_di_data(node_id, params, plane)
-
+                    BpmnDiagramGraphExport.export_Association_xml(params, plane,taskX1,taskY1,textAnnX2,textAnnY2)
+                else:
+                    BpmnDiagramGraphExport.export_node_di_data(node_id, params, plane)
+            except:
+                print()
         flows = bpmn_diagram.get_flows()
         for flow in flows:
             params = flow[2]
