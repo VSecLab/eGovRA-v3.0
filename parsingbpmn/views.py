@@ -902,6 +902,7 @@ def risk_analysis(request, systemId, processId, assetId):
         maxnoncompliance = 0
         maxprivacy = 0
 
+        print(SIRecords)
         for SIRecord in SIRecords:
             for Threatstride in strides:
                 stride = Threatstride.stride.category
@@ -1324,6 +1325,63 @@ def StrideImpact_Result(request, systemId, processId):
 
 @csrf_exempt
 def risk_analysis_result(request, systemId, processId):
+    stride_impact_list = []
+    risk_list = []
+    process = Process.objects.get(id=processId)
+    # delete all StrideImpactRecord related to process
+    # StrideImpactRecord.objects.filter(process=process).delete()
+
+    save = False
+    count = 0
+    for info, value in (request.POST).items():
+        splittedInfo = info.split('_')
+        stride = splittedInfo[0]
+        impactInfo = splittedInfo[1]
+        if (stride == 'spoofing'):
+            strideCategory = 'Spoofing'
+        if (stride == 'tampering'):
+            strideCategory = 'Tampering'
+        if (stride == 'repudiation'):
+            strideCategory = 'Repudiation'
+        if (stride == 'informationdisclosure'):
+            strideCategory = 'Information Disclosure'
+        if (stride == 'dos'):
+            strideCategory = 'Denial Of Services'
+        if (stride == 'elevationofprivileges'):
+            strideCategory = 'Elevation of privilege'
+
+        if (impactInfo == 'noncompliance'):
+            NonComplianceString = 'Non Compliance'
+            NonComplianceValue = value
+            stride_impact_list.append((strideCategory, NonComplianceString, NonComplianceValue))
+        if (impactInfo == 'financialdamage'):
+            FinancialDamageValue = value
+            FinancialDamageString = 'Financial Damage'
+            stride_impact_list.append((strideCategory, FinancialDamageString, FinancialDamageValue))
+        if (impactInfo == 'reputationdamage'):
+            ReputationDamageValue = value
+            ReputationDamageString = 'Reputation Damage'
+            stride_impact_list.append((strideCategory, ReputationDamageString, ReputationDamageValue))
+        if (impactInfo == 'privacyviolation'):
+            PrivacyViolationValue = value
+            PrivacyViolationString = 'Privacy Violation'
+            stride_impact_list.append((strideCategory, PrivacyViolationString, PrivacyViolationValue))
+
+        count += 1
+        if (count == 4):
+            save = True
+        if (save):
+            strideObject = Stride.objects.get(category=strideCategory)
+            strideImpactRecord = StrideImpactRecord.objects.all().get_or_create(process=process,
+                                                                                stride=strideObject,
+                                                                                financialdamage=FinancialDamageValue,
+                                                                                reputationdamage=ReputationDamageValue,
+                                                                                noncompliance=NonComplianceValue,
+                                                                                privacyviolation=PrivacyViolationValue)
+            save = False
+            count = 0
+
+
     system = System.objects.filter(id=systemId).first()
     process = Process.objects.filter(id=processId).first()
     assets = Asset.objects.filter(process=process)
@@ -1342,13 +1400,12 @@ def risk_analysis_result(request, systemId, processId):
 
     for asset in assets:
         threat_model = (threat_modeling_per_asset(systemId, processId, asset.id))
-        # print(threat_model['threat_model_info'])
         threats = threat_model['threat_model_info']
 
         TAscores = ThreatAgentRiskScores.objects.filter(system=system)[0]
         SIRecords = StrideImpactRecord.objects.filter(process=process)
 
-        # print(TAscores)
+        print(TAscores)
         # print(SIRecords)
 
         LossOfConfidentiality = 0
@@ -1374,11 +1431,11 @@ def risk_analysis_result(request, systemId, processId):
             threat = threatwithinfo[0]
             strides = threatwithinfo[1]
 
-            maxFinancial = 0
-            maxReputation = 0
-            maxnoncompliance = 0
-            maxprivacy = 0
-
+            maxFinancial = 5
+            maxReputation = 5
+            maxnoncompliance = 5
+            maxprivacy = 5
+            print(SIRecords)
             for SIRecord in SIRecords:
                 for Threatstride in strides:
                     stride = Threatstride.stride.category
@@ -1567,6 +1624,8 @@ def risk_analysis_result(request, systemId, processId):
             if (EoPRisks[i] >= maxEoP):
                 maxEoP = EoPRisks[i]
 
+    print(maxSpoofing,maxTampering,maxRep,maxInf,maxDoS,maxEoP)
+
     SpoofingOverallRiskString = calculate_severity_per_stride(maxSpoofing)
     TamperingOverallRiskString = calculate_severity_per_stride(maxTampering)
     RepOverallRiskString = calculate_severity_per_stride(maxRep)
@@ -1688,16 +1747,6 @@ def task_manage_data(request,systemId,processId):
                                                   None)
             manually_added_single_data.save()
         bpmn_graph.export_xml_file(pathBPMN, filename)
-
-
-
-
-
-
-
-
-
-
 
 
     return redirect('process_view_task_type', systemId, processId)
