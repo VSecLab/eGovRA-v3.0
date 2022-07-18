@@ -75,29 +75,28 @@ WSGI_APPLICATION = 'eGov_RA.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.mysql',
-#        'NAME': 'egov_db',
-#        'USER': 'root',
-#        'PASSWORD': 'root',
-#        'HOST':'egovra-v2-master_egov_db_1',
-#        'PORT':'3306',
-
-#   }
-#}
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'egov_db',
+       'NAME': 'egov_db',
         'USER': 'root',
         'PASSWORD': 'root',
-        'HOST':'localhost',
+       'HOST':'egov_db',
         'PORT':'3306',
 
-    }
+   }
 }
+
+#DATABASES = {
+#    'default': {
+#       'ENGINE': 'django.db.backends.mysql',
+#      'NAME': 'egov_db',
+#       'USER': 'root',
+#      'PASSWORD': 'root',
+#     'HOST':'localhost',
+#      'PORT':'3306',
+#   }
+#}
 
 
 # Password validation

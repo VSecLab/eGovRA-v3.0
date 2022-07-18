@@ -1665,13 +1665,16 @@ def task_manage_data(request,systemId,processId):
         if (data != "csrfmiddlewaretoken"):
             #print(data,tasks)
             for task in tasks:
-                task_db= Asset.objects.filter(name=task).first().id
-                id_data = data.split(':')[0]
-                data_db = Asset.objects.filter(bpmn_id=data).first()
-                #print(task_db,data_db,"QUA")
-                task_manage_data = Task_manages_Data(task_id=Asset.objects.filter(name=task).first().id
-                                                     ,data_id=Asset.objects.filter(bpmn_id=data).first().id)
-                task_manage_data.save()
+                try:
+                    task_db= Asset.objects.filter(name=task).first().id
+                    id_data = data.split(':')[0]
+                    data_db = Asset.objects.filter(bpmn_id=data).first()
+                    #print(task_db,data_db,"QUA")
+                    task_manage_data = Task_manages_Data(task_id=Asset.objects.filter(name=task).first().id
+                                                         ,data_id=Asset.objects.filter(bpmn_id=data).first().id)
+                    task_manage_data.save()
+                except:
+                    print()
 
     manually_added_data = Asset.objects.filter(process=Process.objects.filter(pk=processId).first())
     print(manually_added_data)
